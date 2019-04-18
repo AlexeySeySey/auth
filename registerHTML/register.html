@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+ <head>
+   <meta charset="utf-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+   <meta name="description" content="">
+   <meta name="author" content="">
+
+   <title>Registration</title>
+   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+
+   <style>
+html,body {
+ height: 100%;
+}
+
+body {
+ display: -ms-flexbox;
+ display: flex;
+ -ms-flex-align: center;
+ align-items: center;
+ padding-top: 40px;
+ padding-bottom: 40px;
+ background-color: #f5f5f5;
+}
+
+.form-signin {
+ width: 100%;
+ max-width: 330px;
+ padding: 15px;
+ margin: auto;
+}
+.form-signin .checkbox {
+ font-weight: 400;
+}
+.form-signin .form-control {
+ position: relative;
+ box-sizing: border-box;
+ height: auto;
+ padding: 10px;
+ font-size: 16px;
+}
+.form-signin .form-control:focus {
+ z-index: 2;
+}
+.form-signin input[type="email"] {
+ margin-bottom: -1px;
+ border-bottom-right-radius: 0;
+ border-bottom-left-radius: 0;
+}
+.form-signin input[type="password"] {
+ margin-bottom: 10px;
+ border-top-left-radius: 0;
+ border-top-right-radius: 0;
+}
+#error_message{
+   color: black !important;
+   font-weight: bold !important;
+}
+#success_message{
+   color: black !important;
+   font-weight: bold !important;
+}
+   </style>
+ </head>
+
+ <body id="body" class="text-center">
+
+
+   <form class="form-signin">
+           <div id="error_message" class="h3 mb-3 alert alert-danger"></div>
+           <div id="success_message" class="h3 mb-3 alert alert-success"></div>
+     <h1 class="h3 mb-3 font-weight-normal"><i class="fas fa-user-plus"></i>  Register User</h1>
+
+     <label for="inputPassword" class="sr-only">Name</label>
+     <input id="name" type="text" class="form-control" placeholder="Name" required>
+<br>
+     <label for="inputEmail" class="sr-only">Email address</label>
+     <input id="email" type="email" id="inputEmail" class="form-control" placeholder="Email address" required autofocus>
+
+     <div class="checkbox mb-3">
+         <hr>
+         <br>
+     </div>
+     <button id="submit" class="btn btn-lg btn-primary btn-block" type="button">Register</button>
+   </form>
+
+<script>
+   // MOCK
+   const URL = 'https://httpbin.org/post';
+
+   document.getElementById('success_message').style.cssText="display:none"
+   document.getElementById('error_message').style.cssText="display:none"
+
+   var cooki = getCookie("auth")
+   var body = document.getElementById('body')
+
+       if ((!cooki.isAdmin) || (cookie==undefined)) {
+         // MOCK
+         // document.getElementById('body').innerHTML="<h2 class='h3 mb-3' style='margin-left:800px'>Permission denied</h2>"
+       }
+  
+           function getCookie(name) {
+             var matches = document.cookie.match(new RegExp(
+               "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
+             ));
+             return matches ? decodeURIComponent(matches[1]) : undefined;
+           }
+document.getElementById('submit').addEventListener('click', function() {
+   fetch(URL, {
+           method: 'post',
+           headers: {
+               'Accept': 'application/json',
+               'Content-Type': 'application/json'
+           },
+           body: JSON.stringify({
+               name: document.getElementById('name').value,
+               email: document.getElementById('email').value
+           })
+       }).then((res) => {
+           res.json()
+       })
+       .then((res) => {
+           document.getElementById('success_message').innerHTML = "User Successfully Registered"
+               document.getElementById('success_message').style.cssText="display:block"
+               document.getElementById('name').value = ""
+               document.getElementById('email').value = ""
+      
+           setTimeout(function(){
+               document.getElementById('success_message').style.cssText="display:none"
+           }, 2000)
+          console.log(res)
+       })
+       .catch((err)=>{
+           document.getElementById('error_message').innerHTML = "User Registration Failed: " + err
+               document.getElementById('error_message').style.cssText="display:block"
+               document.getElementById('name').value = ""
+               document.getElementById('email').value = ""
+      
+           setTimeout(function(){
+               document.getElementById('error_message').style.cssText="display:none"
+           }, 2000)
+          console.log(err)
+       });
+})
+</script>   
+ </body>
+</html>

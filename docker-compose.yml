@@ -1,0 +1,47 @@
+# version: "2"
+# services:
+#   auth:
+#     build:
+#       context: .
+#       dockerfile: auth/Dockerfile
+#     container_name: auth
+#     ports:
+#     - 8800:8081
+#     restart: always
+#     volumes:
+#     - .:/go/src/todo_SELF
+version: "2"
+services:
+  #8081
+  auth:
+    build:
+      context: .
+      dockerfile: auth/Dockerfile
+    restart: always
+    volumes:
+    - .:/go/src/todo_SELF
+    container_name: auth
+    ports:
+     - '8081:8081'
+     #- '8800:8800'
+     - '8080:8080'
+  mongo:
+    image: 'mongo:latest'
+    container_name: 'mongo'
+    ports:
+      - '27100:27017'     
+  redis:
+    image: "redis:alpine"   
+    restart: unless-stopped
+    container_name: 'redis'
+    ports:
+      - '6379:6379'
+  web:
+    container_name: 'web'
+    image: 'nginx:latest'
+    ports:
+      - '8000:80'
+    volumes:
+      - './static:/usr/share/nginx/html'
+    depends_on:
+      - 'auth'    
