@@ -2,7 +2,24 @@ package service
 
 import (
 	"context"
-	"todo_SELF/auth/pkg/entities"
+	"io/ioutil"
+	"time"
+
+	entities "todo_SELF/auth/pkg/entities"
+	env "todo_SELF/auth/pkg/env"
+	helper "todo_SELF/auth/pkg/helper"
+	db "todo_SELF/auth/pkg/storage"
+
+	log "github.com/go-kit/kit/log"
+	"gopkg.in/mgo.v2/bson"
+
+	ewrapper "github.com/pkg/errors"
+)
+
+var (
+	Mongo  = db.Mongo{}
+	Redis  = db.Redis{}
+	Logger log.Logger
 )
 
 // AuthService describes the service.
@@ -23,49 +40,208 @@ type AuthService interface {
 	UserRegistrationAttempt(ctx context.Context, creds entities.Credentials) (err error) // POST "/user-registration-attempt"
 
 	// return admin form (display handled html page) for regitration new user
-	RegisterNewUserForm(ctx context.Context) error // GET "/register-new-user-form"
+	RegisterNewUserForm(ctx context.Context) (page string, e0 error) // GET "/register-new-user-form"
 
 	// return URL for html page (will be iframe, but page handles in auth service), where user can put his login and send it to Login() method
-	UserLoginForm(ctx context.Context) error // GET "/user-login-form"
+	UserLoginForm(ctx context.Context) (page string, e0 error) // GET "/user-login-form"
 
 	// return URL for html page (will be iframe, but page handles in auth service), where user can put his info (email, name and comment), and send it to UserRegistrationAttempt() method
-	UserRegisterForm(ctx context.Context) error // GET "/user-register-form"
+	UserRegisterForm(ctx context.Context) (page string, e0 error) // GET "/user-register-form"
 }
 
 type basicAuthService struct{}
 
 func (b *basicAuthService) Register(ctx context.Context, creds entities.Credentials) (err error) {
-	// TODO implement the business logic of Register
-	return err
+	mgoSession, err := Mongo.Connect()
+	if err != nil {
+		return ewrapper.Wrap(err, env.ErrDBSession)
+	}
+	defer mgoSession.Close()
+
+	_, err = Redis.Connect()
+	if err != nil {
+		return err
+	}
+	var (
+		ch          = make(chan error, 1)
+		contentType = "text/html"
+		subject     = "Registration Accepted!"
+	)
+	if err := helper.IsValidCreds(creds); err != nil {
+		return err
+	}
+
+	user, isAdmin, err := helper.IsUserExist(creds, &Mongo)
+	if err == nil {
+		return ewrapper.Wrap(env.ErrUserAlreadyExist, env.ErrRegister)
+	}
+
+	Logger.Log("User: ", user)
+
+	tokenKey, err := helper.GenerateRandomString()
+	if err != nil {
+		return err
+	}
+
+	expDateTime := helper.TokenExpiration()
+	id, err := Mongo.Insert(entities.User{
+		Email:    creds.Email,
+		Password: creds.Password,
+		Name:     creds.Name,
+		Token: entities.Key{
+			Token:      tokenKey,
+			IsAdmin:    isAdmin,
+			Expired_at: expDateTime,
+		}})
+	if err != nil {
+		return err
+	}
+
+	if err = Redis.Set(tokenKey, id); err != nil {
+		return err
+	}
+
+	go helper.SendEmail(creds.Email, env.AdminEmail, subject, creds.Message, contentType, ch)
+	err = <-ch
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
+
 func (b *basicAuthService) Login(ctx context.Context, creds entities.Credentials) (key entities.Key, err error) {
-	// TODO implement the business logic of Login
-	return key, err
+	mgoSession, err := Mongo.Connect()
+	if err != nil {
+		return entities.Key{}, ewrapper.Wrap(err, env.ErrDBSession)
+	}
+	defer mgoSession.Close()
+
+	_, err = Redis.Connect()
+	if err != nil {
+		return entities.Key{}, err
+	}
+	if err := helper.IsValidCreds(creds); err != nil {
+		return entities.Key{}, err
+	}
+
+	user, isAdmin, err := helper.IsUserExist(creds, &Mongo)
+	if err != nil {
+		return entities.Key{}, err
+	}
+
+	var logger log.Logger
+	logger.Log("User: ", user)
+
+	token, err := helper.GenerateRandomString()
+	if err != nil {
+		return entities.Key{}, err
+	}
+
+	newKey := entities.Key{
+		Token:      token,
+		IsAdmin:    isAdmin,
+		Expired_at: helper.TokenExpiration(),
+	}
+	if err := Mongo.Update(bson.M{"_id": user.Id}, bson.M{"Token": newKey}); err != nil {
+		return entities.Key{}, err
+	}
+
+	// delete old and set new, becouse token - is key
+	if err = Redis.Del(user.Token.Token); err != nil {
+		return entities.Key{}, err
+	}
+	if err = Redis.Set(token, user.Id); err != nil {
+		return entities.Key{}, err
+	}
+
+	return entities.Key{
+		Token:      token,
+		IsAdmin:    isAdmin,
+		Expired_at: helper.TokenExpiration(),
+	}, nil
 }
+
 func (b *basicAuthService) Access(ctx context.Context, key entities.Key) (e0 entities.Key, e1 error) {
-	// TODO implement the business logic of Access
-	return e0, e1
+	mgoSession, err := Mongo.Connect()
+	if err != nil {
+		return entities.Key{}, ewrapper.Wrap(err, env.ErrDBSession)
+	}
+	defer mgoSession.Close()
+
+	_, err = Redis.Connect()
+	if err != nil {
+		return entities.Key{}, err
+	}
+	_, err = helper.IsValidToken(&Redis, key)
+	if err != nil {
+		return entities.Key{}, err
+	}
+	return key, nil
 }
+
 func (b *basicAuthService) Logout(ctx context.Context, key entities.Key) (e0 entities.Key, e1 error) {
-	// TODO implement the business logic of Logout
-	return e0, e1
+	mgoSession, err := Mongo.Connect()
+	if err != nil {
+		return entities.Key{}, ewrapper.Wrap(err, env.ErrDBSession)
+	}
+	defer mgoSession.Close()
+
+	_, err = Redis.Connect()
+	if err != nil {
+		return entities.Key{}, err
+	}
+	key.Expired_at = time.Now().Format(helper.TimeFormat)
+
+	userId, err := helper.IsValidToken(&Redis, key)
+	if err != nil {
+		return entities.Key{}, err
+	}
+
+	if err := Mongo.Update(bson.M{"_id": userId}, bson.M{"Token": key}); err != nil {
+		return entities.Key{}, err
+	}
+
+	return key, nil
 }
+
 func (b *basicAuthService) UserRegistrationAttempt(ctx context.Context, creds entities.Credentials) (err error) {
-	// TODO implement the business logic of UserRegistrationAttempt
+	var (
+		ch          = make(chan error)
+		contentType = "text/html"
+		subject     = "New Registration Attempt!"
+	)
+
+	go helper.SendEmail(creds.Email, env.AdminEmail, subject, creds.Message, contentType, ch)
+	err = <-ch
 	return err
 }
 
-func (b *basicAuthService) RegisterNewUserForm(ctx context.Context) (e0 error) {
-	// TODO implement the business logic of RegisterNewUserForm
-	return e0
+func (b *basicAuthService) RegisterNewUserForm(ctx context.Context) (page string, e0 error) {
+	content, e0 := ioutil.ReadFile("static/registerUser.html")
+	if e0 != nil {
+		return "", e0
+	}
+	page = string(content)
+	return string(page), nil
 }
-func (b *basicAuthService) UserLoginForm(ctx context.Context) (e0 error) {
-	// TODO implement the business logic of UserLoginForm
-	return e0
+
+func (b *basicAuthService) UserLoginForm(ctx context.Context) (page string, e0 error) {
+	content, e0 := ioutil.ReadFile("static/signin.html")
+	if e0 != nil {
+		return "", e0
+	}
+	page = string(content)
+	return string(page), nil
 }
-func (b *basicAuthService) UserRegisterForm(ctx context.Context) (e0 error) {
-	// TODO implement the business logic of UserRegisterForm
-	return e0
+
+func (b *basicAuthService) UserRegisterForm(ctx context.Context) (page string, e0 error) {
+	content, e0 := ioutil.ReadFile("static/registerAttempt.html")
+	if e0 != nil {
+		return "", e0
+	}
+	page = string(content)
+	return string(page), nil
 }
 
 // NewBasicAuthService returns a naive, stateless implementation of AuthService.

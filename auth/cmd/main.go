@@ -1,6 +1,13 @@
 package main
 
-import service "todo_SELF/auth/cmd/service"
+import (
+	"fmt"
+	"todo_SELF/auth/cmd/service"
+)
+
+func init() {
+	fmt.Println("_____________________DEBUG______________")
+}
 
 func main() {
 	service.Run()

@@ -1,15 +1,3 @@
-# version: "2"
-# services:
-#   auth:
-#     build:
-#       context: .
-#       dockerfile: auth/Dockerfile
-#     container_name: auth
-#     ports:
-#     - 8800:8081
-#     restart: always
-#     volumes:
-#     - .:/go/src/todo_SELF
 version: "2"
 services:
   #8081
@@ -17,17 +5,18 @@ services:
     build:
       context: .
       dockerfile: auth/Dockerfile
+    container_name: auth
+    ports:
+    #- 8800:8081
+    - 8081:8081
     restart: always
     volumes:
     - .:/go/src/todo_SELF
-    container_name: auth
-    ports:
-     - '8081:8081'
-     #- '8800:8800'
-     - '8080:8080'
+    - /static:/static
   mongo:
     image: 'mongo:latest'
     container_name: 'mongo'
+    #host: '127.0.0.1'
     ports:
       - '27100:27017'     
   redis:

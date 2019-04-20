@@ -202,14 +202,15 @@ type RegisterNewUserFormRequest struct{}
 
 // RegisterNewUserFormResponse collects the response parameters for the RegisterNewUserForm method.
 type RegisterNewUserFormResponse struct {
-	E0 error `json:"e0"`
+	Page string `json:"page"`
+	E0   error  `json:"e0"`
 }
 
 // MakeRegisterNewUserFormEndpoint returns an endpoint that invokes RegisterNewUserForm on the service.
 func MakeRegisterNewUserFormEndpoint(s service.AuthService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		e0 := s.RegisterNewUserForm(ctx)
-		return RegisterNewUserFormResponse{E0: e0}, nil
+		page, e0 := s.RegisterNewUserForm(ctx)
+		return RegisterNewUserFormResponse{Page: page, E0: e0}, nil
 	}
 }
 
@@ -223,14 +224,15 @@ type UserLoginFormRequest struct{}
 
 // UserLoginFormResponse collects the response parameters for the UserLoginForm method.
 type UserLoginFormResponse struct {
-	E0 error `json:"e0"`
+	Page string `json:"page"`
+	E0   error  `json:"e0"`
 }
 
 // MakeUserLoginFormEndpoint returns an endpoint that invokes UserLoginForm on the service.
 func MakeUserLoginFormEndpoint(s service.AuthService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		e0 := s.UserLoginForm(ctx)
-		return UserLoginFormResponse{E0: e0}, nil
+		page, e0 := s.UserLoginForm(ctx)
+		return UserLoginFormResponse{Page: page, E0: e0}, nil
 	}
 }
 
@@ -244,14 +246,15 @@ type UserRegisterFormRequest struct{}
 
 // UserRegisterFormResponse collects the response parameters for the UserRegisterForm method.
 type UserRegisterFormResponse struct {
-	E0 error `json:"e0"`
+	Page string `json:"page"`
+	E0   error  `json:"e0"`
 }
 
 // MakeUserRegisterFormEndpoint returns an endpoint that invokes UserRegisterForm on the service.
 func MakeUserRegisterFormEndpoint(s service.AuthService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		e0 := s.UserRegisterForm(ctx)
-		return UserRegisterFormResponse{E0: e0}, nil
+		page, e0 := s.UserRegisterForm(ctx)
+		return UserRegisterFormResponse{Page: page, E0: e0}, nil
 	}
 }
 
@@ -261,31 +264,31 @@ func (r UserRegisterFormResponse) Failed() error {
 }
 
 // RegisterNewUserForm implements Service. Primarily useful in a client.
-func (e Endpoints) RegisterNewUserForm(ctx context.Context) (e0 error) {
+func (e Endpoints) RegisterNewUserForm(ctx context.Context) (page string, e0 error) {
 	request := RegisterNewUserFormRequest{}
 	response, err := e.RegisterNewUserFormEndpoint(ctx, request)
 	if err != nil {
 		return
 	}
-	return response.(RegisterNewUserFormResponse).E0
+	return response.(RegisterNewUserFormResponse).Page, response.(RegisterNewUserFormResponse).E0
 }
 
 // UserLoginForm implements Service. Primarily useful in a client.
-func (e Endpoints) UserLoginForm(ctx context.Context) (e0 error) {
+func (e Endpoints) UserLoginForm(ctx context.Context) (page string, e0 error) {
 	request := UserLoginFormRequest{}
 	response, err := e.UserLoginFormEndpoint(ctx, request)
 	if err != nil {
 		return
 	}
-	return response.(UserLoginFormResponse).E0
+	return response.(UserLoginFormResponse).Page, response.(UserLoginFormResponse).E0
 }
 
 // UserRegisterForm implements Service. Primarily useful in a client.
-func (e Endpoints) UserRegisterForm(ctx context.Context) (e0 error) {
+func (e Endpoints) UserRegisterForm(ctx context.Context) (page string, e0 error) {
 	request := UserRegisterFormRequest{}
 	response, err := e.UserRegisterFormEndpoint(ctx, request)
 	if err != nil {
 		return
 	}
-	return response.(UserRegisterFormResponse).E0
+	return response.(UserRegisterFormResponse).Page, response.(UserRegisterFormResponse).E0
 }

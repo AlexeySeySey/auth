@@ -1,6 +1,9 @@
 FROM golang
 
-RUN mkdir -p /go/src/todo_SELF
+WORKDIR $GOPATH/src/todo_SELF
+
+# RUN mkdir -p /go/src/todo_SELF
+# files, e0 := filepath.Glob("*") -> where are we
 
 ADD . /go/src/todo_SELF
 
