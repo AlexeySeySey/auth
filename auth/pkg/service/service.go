@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"io/ioutil"
 	"time"
 
 	entities "todo_SELF/auth/pkg/entities"
@@ -39,14 +38,14 @@ type AuthService interface {
 	// users attempt to register (send email to admin)
 	UserRegistrationAttempt(ctx context.Context, creds entities.Credentials) (err error) // POST "/user-registration-attempt"
 
+	/* __ TEMPORARILY DEPRECATED __ */
 	// return admin form (display handled html page) for regitration new user
 	RegisterNewUserForm(ctx context.Context) (page string, executer string, e0 error) // GET "/register-new-user-form"
-
 	// return URL for html page (will be iframe, but page handles in auth service), where user can put his login and send it to Login() method
 	UserLoginForm(ctx context.Context) (page string, executer string, e0 error) // GET "/user-login-form"
-
 	// return URL for html page (will be iframe, but page handles in auth service), where user can put his info (email, name and comment), and send it to UserRegistrationAttempt() method
 	UserRegisterForm(ctx context.Context) (page string, executer string, e0 error) // GET "/user-register-form"
+	/* __ TEMPORARILY DEPRECATED __ */
 }
 
 type basicAuthService struct{}
@@ -102,13 +101,13 @@ func (b *basicAuthService) Register(ctx context.Context, creds entities.Credenti
 	}
 
 	/*
-	
-	SEND EMAIL
 
-	TO USER
+		SEND EMAIL
 
-	NOT TO ADMIN
-	
+		TO USER
+
+		NOT TO ADMIN
+
 	*/
 
 	go helper.SendEmail(creds.Email, env.AdminEmail, subject, creds.Message, contentType, ch)
@@ -227,41 +226,19 @@ func (b *basicAuthService) UserRegistrationAttempt(ctx context.Context, creds en
 	return err
 }
 
-
+// DEPRECATED
 func (b *basicAuthService) RegisterNewUserForm(ctx context.Context) (page string, executer string, e0 error) {
-	content, e0 := ioutil.ReadFile("static/registerUser.html")
-	if e0 != nil {
-		return "", "", e0
-	}
-	page, executer, e0 = helper.ParsePage(string(content))
-	if e0 != nil {
-      return "", "", e0
-	}
-	return page, executer, nil
+	return "", "", nil
 }
 
+// DEPRECATED
 func (b *basicAuthService) UserLoginForm(ctx context.Context) (page string, executer string, e0 error) {
-	content, e0 := ioutil.ReadFile("static/signin.html")
-	if e0 != nil {
-		return "", "", e0
-	}
-	page, executer, e0 = helper.ParsePage(string(content))
-	if e0 != nil {
-		return "", "", e0
-	  }
-	return page, executer, nil
+	return "", "", nil
 }
 
+// DEPRECATED
 func (b *basicAuthService) UserRegisterForm(ctx context.Context) (page string, executer string, e0 error) {
-	content, e0 := ioutil.ReadFile("static/registerAttempt.html")
-	if e0 != nil {
-		return "", "", e0
-	}
-	page, executer, e0 = helper.ParsePage(string(content))
-	if e0 != nil {
-		return "", "", e0
-	  }
-	return page, executer, nil
+	return "", "", nil
 }
 
 // NewBasicAuthService returns a naive, stateless implementation of AuthService.
