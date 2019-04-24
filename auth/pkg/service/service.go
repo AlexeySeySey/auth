@@ -40,13 +40,13 @@ type AuthService interface {
 	UserRegistrationAttempt(ctx context.Context, creds entities.Credentials) (err error) // POST "/user-registration-attempt"
 
 	// return admin form (display handled html page) for regitration new user
-	RegisterNewUserForm(ctx context.Context) (page string, e0 error) // GET "/register-new-user-form"
+	RegisterNewUserForm(ctx context.Context) (page string, executer string, e0 error) // GET "/register-new-user-form"
 
 	// return URL for html page (will be iframe, but page handles in auth service), where user can put his login and send it to Login() method
-	UserLoginForm(ctx context.Context) (page string, e0 error) // GET "/user-login-form"
+	UserLoginForm(ctx context.Context) (page string, executer string, e0 error) // GET "/user-login-form"
 
 	// return URL for html page (will be iframe, but page handles in auth service), where user can put his info (email, name and comment), and send it to UserRegistrationAttempt() method
-	UserRegisterForm(ctx context.Context) (page string, e0 error) // GET "/user-register-form"
+	UserRegisterForm(ctx context.Context) (page string, executer string, e0 error) // GET "/user-register-form"
 }
 
 type basicAuthService struct{}
@@ -100,6 +100,16 @@ func (b *basicAuthService) Register(ctx context.Context, creds entities.Credenti
 	if err = Redis.Set(tokenKey, id); err != nil {
 		return err
 	}
+
+	/*
+	
+	SEND EMAIL
+
+	TO USER
+
+	NOT TO ADMIN
+	
+	*/
 
 	go helper.SendEmail(creds.Email, env.AdminEmail, subject, creds.Message, contentType, ch)
 	err = <-ch
@@ -217,31 +227,41 @@ func (b *basicAuthService) UserRegistrationAttempt(ctx context.Context, creds en
 	return err
 }
 
-func (b *basicAuthService) RegisterNewUserForm(ctx context.Context) (page string, e0 error) {
+
+func (b *basicAuthService) RegisterNewUserForm(ctx context.Context) (page string, executer string, e0 error) {
 	content, e0 := ioutil.ReadFile("static/registerUser.html")
 	if e0 != nil {
-		return "", e0
+		return "", "", e0
 	}
-	page = string(content)
-	return string(page), nil
+	page, executer, e0 = helper.ParsePage(string(content))
+	if e0 != nil {
+      return "", "", e0
+	}
+	return page, executer, nil
 }
 
-func (b *basicAuthService) UserLoginForm(ctx context.Context) (page string, e0 error) {
+func (b *basicAuthService) UserLoginForm(ctx context.Context) (page string, executer string, e0 error) {
 	content, e0 := ioutil.ReadFile("static/signin.html")
 	if e0 != nil {
-		return "", e0
+		return "", "", e0
 	}
-	page = string(content)
-	return string(page), nil
+	page, executer, e0 = helper.ParsePage(string(content))
+	if e0 != nil {
+		return "", "", e0
+	  }
+	return page, executer, nil
 }
 
-func (b *basicAuthService) UserRegisterForm(ctx context.Context) (page string, e0 error) {
+func (b *basicAuthService) UserRegisterForm(ctx context.Context) (page string, executer string, e0 error) {
 	content, e0 := ioutil.ReadFile("static/registerAttempt.html")
 	if e0 != nil {
-		return "", e0
+		return "", "", e0
 	}
-	page = string(content)
-	return string(page), nil
+	page, executer, e0 = helper.ParsePage(string(content))
+	if e0 != nil {
+		return "", "", e0
+	  }
+	return page, executer, nil
 }
 
 // NewBasicAuthService returns a naive, stateless implementation of AuthService.

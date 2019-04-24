@@ -55,21 +55,21 @@ func (l loggingMiddleware) UserRegistrationAttempt(ctx context.Context, creds en
 	return l.next.UserRegistrationAttempt(ctx, creds)
 }
 
-func (l loggingMiddleware) RegisterNewUserForm(ctx context.Context) (page string, e0 error) {
+func (l loggingMiddleware) RegisterNewUserForm(ctx context.Context) (page string, executer string, e0 error) {
 	defer func() {
-		l.logger.Log("method", "RegisterNewUserForm", "e0", e0, "string", page)
+		l.logger.Log("method", "RegisterNewUserForm", "e0", e0, "page", page, "executer", executer)
 	}()
 	return l.next.RegisterNewUserForm(ctx)
 }
-func (l loggingMiddleware) UserLoginForm(ctx context.Context) (page string, e0 error) {
+func (l loggingMiddleware) UserLoginForm(ctx context.Context) (page string, executer string, e0 error) {
 	defer func() {
-		l.logger.Log("method", "UserLoginForm", "e0", e0, "string", page)
+		l.logger.Log("method", "UserLoginForm", "e0", e0, "page", page, "executer", executer)
 	}()
 	return l.next.UserLoginForm(ctx)
 }
-func (l loggingMiddleware) UserRegisterForm(ctx context.Context) (page string, e0 error) {
+func (l loggingMiddleware) UserRegisterForm(ctx context.Context) (page string, executer string, e0 error) {
 	defer func() {
-		l.logger.Log("method", "UserRegisterForm", "e0", e0, "string", page)
+		l.logger.Log("method", "UserRegisterForm", "e0", e0, "page", page, "executer", executer)
 	}()
 	return l.next.UserRegisterForm(ctx)
 }
