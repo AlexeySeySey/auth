@@ -36,6 +36,7 @@ type AuthService interface {
 	Logout(ctx context.Context, key entities.Key) (entities.Key, error) // POST "/logout"
 
 	// users attempt to register (send email to admin)
+	// "creds":{...}
 	UserRegistrationAttempt(ctx context.Context, creds entities.Credentials) (err error) // POST "/user-registration-attempt"
 
 	/* __ TEMPORARILY DEPRECATED __ */
@@ -61,11 +62,11 @@ func (b *basicAuthService) Register(ctx context.Context, creds entities.Credenti
 	if err != nil {
 		return err
 	}
-	var (
-		ch          = make(chan error, 1)
-		contentType = "text/html"
-		subject     = "Registration Accepted!"
-	)
+	// var (
+	// 	ch          = make(chan error, 1)
+	// 	contentType = "text/html"
+	// 	subject     = "Registration Accepted!"
+	// )
 	if err := helper.IsValidCreds(creds); err != nil {
 		return err
 	}
@@ -110,11 +111,11 @@ func (b *basicAuthService) Register(ctx context.Context, creds entities.Credenti
 
 	*/
 
-	go helper.SendEmail(creds.Email, env.AdminEmail, subject, creds.Message, contentType, ch)
-	err = <-ch
-	if err != nil {
-		return err
-	}
+	// go helper.SendEmail(creds.Email, env.AdminEmail, subject, creds.Message, contentType, ch)
+	// err = <-ch
+	// if err != nil {
+	// 	return err
+	// }
 
 	return nil
 }
@@ -216,14 +217,10 @@ func (b *basicAuthService) Logout(ctx context.Context, key entities.Key) (e0 ent
 
 func (b *basicAuthService) UserRegistrationAttempt(ctx context.Context, creds entities.Credentials) (err error) {
 	var (
-		ch          = make(chan error)
 		contentType = "text/html"
 		subject     = "New Registration Attempt!"
 	)
-
-	go helper.SendEmail(creds.Email, env.AdminEmail, subject, creds.Message, contentType, ch)
-	err = <-ch
-	return err
+	return helper.SendEmail(creds.Email, env.AdminEmail, subject, creds.Message, contentType)
 }
 
 // DEPRECATED
