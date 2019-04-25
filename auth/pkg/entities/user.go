@@ -16,11 +16,12 @@ type Key struct {
 
 // user in storage
 type User struct {
-	Id       bson.ObjectId `bson:"_id"`
-	Email    string        `bson:"email"`
-	Name     string        `bson:"name"`
-	Password string        `bspn:"password"`
-	Token    Key           `bson:"token"`
+	Id       bson.ObjectId `json:"id" bson:"_id"` 
+	Email    string        `json:"email" bson:"email"` 
+	Name     string        `json:"name" bson:"name"` 
+	Password string        `json:"password" bson:"password"` 
+	Token    Key           `json:"token" bson:"token"` 
+	IsBanned bool          `json:"isbanned" bson:"isbanned"` 
 }
 
 func (u User) String() string {
@@ -33,10 +34,10 @@ func (u User) String() string {
 
 // user credentials passed, to get token
 type Credentials struct {
-	Email    string `json:"email"`
-	Password string `json:"password, omitempty"`
-	Name     string `json:"name, omitempty"`
-	Message  string `json:"message, omitempty"`
+	Email    string `json:"email" bson:"email"` 
+	Password string `json:"password, omitempty" bson:"password, omitempty"` 
+	Name     string `json:"name, omitempty" bson:"name, omitempty"` 
+	Message  string `json:"message, omitempty" bson:"message, omitempty"` 
 }
 
 func (c Credentials) String() string {

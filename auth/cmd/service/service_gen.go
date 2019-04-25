@@ -22,10 +22,13 @@ func createService(endpoints endpoint.Endpoints) (g *group.Group) {
 func defaultHttpOptions(logger log.Logger, tracer opentracinggo.Tracer) map[string][]http.ServerOption {
 	options := map[string][]http.ServerOption{
 		"Access":                  {http.ServerErrorEncoder(http1.ErrorEncoder), http.ServerErrorLogger(logger), http.ServerBefore(opentracing.HTTPToContext(tracer, "Access", logger))},
+		"BlockUser":               {http.ServerErrorEncoder(http1.ErrorEncoder), http.ServerErrorLogger(logger), http.ServerBefore(opentracing.HTTPToContext(tracer, "BlockUser", logger))},
+		"FetchUsers":              {http.ServerErrorEncoder(http1.ErrorEncoder), http.ServerErrorLogger(logger), http.ServerBefore(opentracing.HTTPToContext(tracer, "FetchUsers", logger))},
 		"Login":                   {http.ServerErrorEncoder(http1.ErrorEncoder), http.ServerErrorLogger(logger), http.ServerBefore(opentracing.HTTPToContext(tracer, "Login", logger))},
 		"Logout":                  {http.ServerErrorEncoder(http1.ErrorEncoder), http.ServerErrorLogger(logger), http.ServerBefore(opentracing.HTTPToContext(tracer, "Logout", logger))},
 		"Register":                {http.ServerErrorEncoder(http1.ErrorEncoder), http.ServerErrorLogger(logger), http.ServerBefore(opentracing.HTTPToContext(tracer, "Register", logger))},
 		"RegisterNewUserForm":     {http.ServerErrorEncoder(http1.ErrorEncoder), http.ServerErrorLogger(logger), http.ServerBefore(opentracing.HTTPToContext(tracer, "RegisterNewUserForm", logger))},
+		"UnblockUser":             {http.ServerErrorEncoder(http1.ErrorEncoder), http.ServerErrorLogger(logger), http.ServerBefore(opentracing.HTTPToContext(tracer, "UnblockUser", logger))},
 		"UserLoginForm":           {http.ServerErrorEncoder(http1.ErrorEncoder), http.ServerErrorLogger(logger), http.ServerBefore(opentracing.HTTPToContext(tracer, "UserLoginForm", logger))},
 		"UserRegisterForm":        {http.ServerErrorEncoder(http1.ErrorEncoder), http.ServerErrorLogger(logger), http.ServerBefore(opentracing.HTTPToContext(tracer, "UserRegisterForm", logger))},
 		"UserRegistrationAttempt": {http.ServerErrorEncoder(http1.ErrorEncoder), http.ServerErrorLogger(logger), http.ServerBefore(opentracing.HTTPToContext(tracer, "UserRegistrationAttempt", logger))},
@@ -38,6 +41,9 @@ func addDefaultEndpointMiddleware(logger log.Logger, duration *prometheus.Summar
 	mw["Access"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "Access")), endpoint.InstrumentingMiddleware(duration.With("method", "Access"))}
 	mw["Logout"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "Logout")), endpoint.InstrumentingMiddleware(duration.With("method", "Logout"))}
 	mw["UserRegistrationAttempt"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "UserRegistrationAttempt")), endpoint.InstrumentingMiddleware(duration.With("method", "UserRegistrationAttempt"))}
+	mw["FetchUsers"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "FetchUsers")), endpoint.InstrumentingMiddleware(duration.With("method", "FetchUsers"))}
+	mw["BlockUser"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "BlockUser")), endpoint.InstrumentingMiddleware(duration.With("method", "BlockUser"))}
+	mw["UnblockUser"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "UnblockUser")), endpoint.InstrumentingMiddleware(duration.With("method", "UnblockUser"))}
 	mw["RegisterNewUserForm"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "RegisterNewUserForm")), endpoint.InstrumentingMiddleware(duration.With("method", "RegisterNewUserForm"))}
 	mw["UserLoginForm"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "UserLoginForm")), endpoint.InstrumentingMiddleware(duration.With("method", "UserLoginForm"))}
 	mw["UserRegisterForm"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "UserRegisterForm")), endpoint.InstrumentingMiddleware(duration.With("method", "UserRegisterForm"))}
@@ -46,7 +52,7 @@ func addDefaultServiceMiddleware(logger log.Logger, mw []service.Middleware) []s
 	return append(mw, service.LoggingMiddleware(logger))
 }
 func addEndpointMiddlewareToAllMethods(mw map[string][]endpoint1.Middleware, m endpoint1.Middleware) {
-	methods := []string{"Register", "Login", "Access", "Logout", "UserRegistrationAttempt", "RegisterNewUserForm", "UserLoginForm", "UserRegisterForm"}
+	methods := []string{"Register", "Login", "Access", "Logout", "UserRegistrationAttempt", "FetchUsers", "BlockUser", "UnblockUser", "RegisterNewUserForm", "UserLoginForm", "UserRegisterForm"}
 	for _, v := range methods {
 		mw[v] = append(mw[v], m)
 	}

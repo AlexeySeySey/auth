@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	entities "todo_SELF/auth/pkg/entities"
@@ -39,6 +40,15 @@ type AuthService interface {
 	// "creds":{...}
 	UserRegistrationAttempt(ctx context.Context, creds entities.Credentials) (err error) // POST "/user-registration-attempt"
 
+	// return all users from database, if requester client is admin
+	FetchUsers(ctx context.Context, key entities.Key) (users []entities.User, err error) // POST "/fetch-users"
+
+	// set user as Banned
+	BlockUser(ctx context.Context, id string) (err error) // POST "/block-user"
+
+	// remove Banned status from user
+	UnblockUser(ctx context.Context, id string) (err error) // POST "/unblock-user"
+
 	/* __ TEMPORARILY DEPRECATED __ */
 	// return admin form (display handled html page) for regitration new user
 	RegisterNewUserForm(ctx context.Context) (page string, executer string, e0 error) // GET "/register-new-user-form"
@@ -62,21 +72,14 @@ func (b *basicAuthService) Register(ctx context.Context, creds entities.Credenti
 	if err != nil {
 		return err
 	}
-	// var (
-	// 	ch          = make(chan error, 1)
-	// 	contentType = "text/html"
-	// 	subject     = "Registration Accepted!"
-	// )
 	if err := helper.IsValidCreds(creds); err != nil {
 		return err
 	}
 
-	user, isAdmin, err := helper.IsUserExist(creds, &Mongo)
+	_, isAdmin, err := helper.IsUserExist(creds, &Mongo)
 	if err == nil {
 		return ewrapper.Wrap(env.ErrUserAlreadyExist, env.ErrRegister)
 	}
-
-	Logger.Log("User: ", user)
 
 	tokenKey, err := helper.GenerateRandomString()
 	if err != nil {
@@ -97,27 +100,16 @@ func (b *basicAuthService) Register(ctx context.Context, creds entities.Credenti
 		return err
 	}
 
-	if err = Redis.Set(tokenKey, id); err != nil {
+	if err = Redis.Set(tokenKey, string(id)); err != nil {
 		return err
 	}
 
-	/*
+	var (
+		contentType = "text/html"
+		subject     = "Registration Accepted!"
+	)
 
-		SEND EMAIL
-
-		TO USER
-
-		NOT TO ADMIN
-
-	*/
-
-	// go helper.SendEmail(creds.Email, env.AdminEmail, subject, creds.Message, contentType, ch)
-	// err = <-ch
-	// if err != nil {
-	// 	return err
-	// }
-
-	return nil
+	return helper.SendEmail(env.AdminEmail, creds.Email, subject, creds.Message, contentType)
 }
 
 func (b *basicAuthService) Login(ctx context.Context, creds entities.Credentials) (key entities.Key, err error) {
@@ -134,20 +126,17 @@ func (b *basicAuthService) Login(ctx context.Context, creds entities.Credentials
 	if err := helper.IsValidCreds(creds); err != nil {
 		return entities.Key{}, err
 	}
-
 	user, isAdmin, err := helper.IsUserExist(creds, &Mongo)
 	if err != nil {
 		return entities.Key{}, err
 	}
 
-	var logger log.Logger
-	logger.Log("User: ", user)
+	fmt.Println(user)
 
 	token, err := helper.GenerateRandomString()
 	if err != nil {
 		return entities.Key{}, err
 	}
-
 	newKey := entities.Key{
 		Token:      token,
 		IsAdmin:    isAdmin,
@@ -161,7 +150,7 @@ func (b *basicAuthService) Login(ctx context.Context, creds entities.Credentials
 	if err = Redis.Del(user.Token.Token); err != nil {
 		return entities.Key{}, err
 	}
-	if err = Redis.Set(token, user.Id); err != nil {
+	if err = Redis.Set(token, string(user.Id)); err != nil {
 		return entities.Key{}, err
 	}
 
@@ -223,6 +212,21 @@ func (b *basicAuthService) UserRegistrationAttempt(ctx context.Context, creds en
 	return helper.SendEmail(creds.Email, env.AdminEmail, subject, creds.Message, contentType)
 }
 
+func (b *basicAuthService) FetchUsers(ctx context.Context, key entities.Key) (users []entities.User, err error) {
+	mgoSession, err := Mongo.Connect()
+	if err != nil {
+		return []entities.User{}, ewrapper.Wrap(err, env.ErrDBSession)
+	}
+	defer mgoSession.Close()
+
+	users, err = Mongo.FetchUsers()
+	if err != nil {
+		return []entities.User{}, err
+	}
+
+	return users, err
+}
+
 // DEPRECATED
 func (b *basicAuthService) RegisterNewUserForm(ctx context.Context) (page string, executer string, e0 error) {
 	return "", "", nil
@@ -250,4 +254,23 @@ func New(middleware []Middleware) AuthService {
 		svc = m(svc)
 	}
 	return svc
+}
+
+func (b *basicAuthService) BlockUser(ctx context.Context, id string) (err error) {
+	mgoSession, err := Mongo.Connect()
+	if err != nil {
+		return ewrapper.Wrap(err, env.ErrDBSession)
+	}
+	defer mgoSession.Close()
+	err = Mongo.Update(bson.M{"_id": bson.ObjectIdHex(id)}, bson.M{"isbanned": true})
+	return err
+}
+func (b *basicAuthService) UnblockUser(ctx context.Context, id string) (err error) {
+	mgoSession, err := Mongo.Connect()
+	if err != nil {
+		return ewrapper.Wrap(err, env.ErrDBSession)
+	}
+	defer mgoSession.Close()
+	err = Mongo.Update(bson.M{"_id": bson.ObjectIdHex(id)}, bson.M{"isbanned": false})
+	return err
 }

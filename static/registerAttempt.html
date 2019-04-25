@@ -4,9 +4,109 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
+    <title>User Registration</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
 </head>
-<body>
-    <h1>User Attempt to Register Form Page</h1>
+<body class="text-center"> 
+   
+   
+        <div id="GlobalError" style="display:none" class="alert alert-danger"><b></b></div>
+        <div id="GlobalSuccess" style="display:none" class="alert alert-success"><b></b></div>
+        <form class="form-inline">
+                <label class="sr-only" for="inlineFormInputName2">Name</label>
+                <input type="text" class="form-control mb-2 mr-sm-2" id="inlineFormInputName2" placeholder="Jane Doe">
+                <div id="NameError" style="display:none" class="alert alert-danger"><b></b></div>
+
+                <br>
+              
+                <label class="sr-only" for="inlineFormInputGroupUsername2">Email</label>
+                <div class="input-group mb-2 mr-sm-2">
+                  <div class="input-group-prepend">
+                    <div class="input-group-text">@</div>
+                  </div>
+                  <input type="email" class="form-control" id="inlineFormInputGroupUsername2" placeholder="Email">
+                </div>
+                <div id="EmailError" style="display:none" class="alert alert-danger"><b></b></div>
+
+                <br>
+
+                <div class="form-group mb-2 mr-sm-2">
+                        <label for="exampleFormControlTextarea1">Message</label>
+                        <textarea class="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>
+                </div>
+                <div id="MessageError" style="display:none" class="alert alert-danger"><b></b></div>
+
+                <br>
+              
+                <button type="button" class="btn btn-primary mb-2" onclick="send()">Submit</button>
+        </form>
+ 
+        
+
+    <script>
+
+             var errors = false
+             
+             const errs = {
+                 "name": "Invalid Name Passed",
+                 "email": "Invalid Email Passed",
+                 "message": "Invalid Message Passed",
+                 "all": "Error Occured: "
+             }
+
+             function validate(str){
+                return str.replace(/<\/?[^>]+(>|$)/g, "")
+             }
+
+             function showErr(id, mess, time) {
+                errors = true
+                document.getElementById(id).style.cssText="display:block"
+                document.getElementById(id).firstChild.innerHTML = message
+                setTimeout(()=>{
+                    document.getElementById(id).style.cssText="display:none"
+                    document.getElementById(id).firstChild.innerHTML = ''
+                }, time*1000)
+             }
+
+             function sendSuccess(s) {
+                    document.getElementById("GlobalSuccess").style.cssText="display:block"
+                    document.getElementById("GlobalSuccess").firstChild.innerHTML = s
+                setTimeout(()=>{
+                 window.location.href = "http://127.0.0.1:8000/signin.html"
+                }, 3000)
+             }
+
+             function sendFailed(e){
+                 document.getElementById("GlobalError").style.cssText="display:block"
+                 document.getElementById('GlobalError').firstChild.innerHTML = errs.all + e
+                setTimeout(()=>{
+                    document.getElementById("GlobalError").style.cssText="display:none"
+                 document.getElementById('GlobalError').firstChild.innerHTML = ''
+                }, 3000)
+             }
+
+            async function send() {
+                 if ((document.getElementById('inlineFormInputName2').value == '')){
+                   await showErr('NameError', errs.name, 3)
+                 }
+                 if ((document.getElementById('inlineFormInputGroupUsername2').value == '') || (!document.getElementById('inlineFormInputGroupUsername2').value.includes('@'))) {
+                    await showErr('EmailError', errs.email, 3)
+                 }
+                 if (document.getElementById('inlineFormInputGroupUsername2').value == '') {
+                    await showErr('MessageError', errs.message, 3)
+                 }
+                 if (errors) throw "Error Occured"
+                 fetch("http://127.0.0.1:8081/register", {
+                     method: "POST",
+                     body: JSON.stringify({
+                          name: validate(document.getElementById('inlineFormInputName2').value),
+                          email: validate(document.getElementById('inlineFormInputGroupUsername2').value),
+                          message: validate(document.getElementById('inlineFormInputGroupUsername2').value)
+                     })
+                 }).then( r => r.json() ).then( r => { sendSuccess(r) } )
+                 .catch( e => e.json() ).then( e => { sendFailed(e) } )
+             }
+    </script>
 </body>
 </html>

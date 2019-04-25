@@ -47,9 +47,29 @@ func (m *Mongo) Search(search bson.M) (entities.User, error) {
 	return result, nil
 }
 
+func (m *Mongo) GetById(id string) (entities.User, error) {
+	user := entities.User{}
+	if err := m.GetCollection(m.mgoSession).Find(bson.M{"_id": bson.ObjectIdHex(id)}).One(&user); err != nil {
+		return entities.User{}, err
+	}
+	return user, nil
+}
+
 func (m *Mongo) Update(where bson.M, new bson.M) error {
 	if err := m.GetCollection(m.mgoSession).Update(where, bson.M{"$set": new}); err != nil {
 		return err
 	}
 	return nil
+}
+
+func (m *Mongo) FetchUsers() ([]entities.User, error) {
+	users := []entities.User{}
+    if err := m.GetCollection(m.mgoSession).Find(nil).All(&users); err != nil {
+		return []entities.User{}, err
+	}
+    return users, nil
+}
+
+func (m *Mongo) DropAll() {
+	m.GetCollection(m.mgoSession).RemoveAll(nil)
 }

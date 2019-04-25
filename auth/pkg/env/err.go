@@ -9,6 +9,7 @@ var (
 	ErrCredentialsValidation = errors.New("INVALID CREDENTIALS")
 	ErrInvalidToken          = errors.New("INVALID TOKEN PASSED")
 	ErrTokenExpired          = errors.New("TOKEN EXPIRED")
+	ErrPermission            = errors.New("PERMISSION DENIED")
 )
 
 // wrappers

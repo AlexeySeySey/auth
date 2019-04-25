@@ -73,3 +73,23 @@ func (l loggingMiddleware) UserRegisterForm(ctx context.Context) (page string, e
 	}()
 	return l.next.UserRegisterForm(ctx)
 }
+
+func (l loggingMiddleware) FetchUsers(ctx context.Context, key entities.Key) (users []entities.User, err error) {
+	defer func() {
+		l.logger.Log("method", "FetchUsers", "key", key, "users", users, "err", err)
+	}()
+	return l.next.FetchUsers(ctx, key)
+}
+
+func (l loggingMiddleware) BlockUser(ctx context.Context, id string) (err error) {
+	defer func() {
+		l.logger.Log("method", "BlockUser", "id", id, "err", err)
+	}()
+	return l.next.BlockUser(ctx, id)
+}
+func (l loggingMiddleware) UnblockUser(ctx context.Context, id string) (err error) {
+	defer func() {
+		l.logger.Log("method", "UnblockUser", "id", id, "err", err)
+	}()
+	return l.next.UnblockUser(ctx, id)
+}

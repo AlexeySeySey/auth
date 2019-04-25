@@ -15,6 +15,9 @@ type Endpoints struct {
 	AccessEndpoint                  endpoint.Endpoint
 	LogoutEndpoint                  endpoint.Endpoint
 	UserRegistrationAttemptEndpoint endpoint.Endpoint
+	FetchUsersEndpoint              endpoint.Endpoint
+	BlockUserEndpoint               endpoint.Endpoint
+	UnblockUserEndpoint             endpoint.Endpoint
 	RegisterNewUserFormEndpoint     endpoint.Endpoint
 	UserLoginFormEndpoint           endpoint.Endpoint
 	UserRegisterFormEndpoint        endpoint.Endpoint
@@ -25,10 +28,13 @@ type Endpoints struct {
 func New(s service.AuthService, mdw map[string][]endpoint.Middleware) Endpoints {
 	eps := Endpoints{
 		AccessEndpoint:                  MakeAccessEndpoint(s),
+		BlockUserEndpoint:               MakeBlockUserEndpoint(s),
+		FetchUsersEndpoint:              MakeFetchUsersEndpoint(s),
 		LoginEndpoint:                   MakeLoginEndpoint(s),
 		LogoutEndpoint:                  MakeLogoutEndpoint(s),
 		RegisterEndpoint:                MakeRegisterEndpoint(s),
 		RegisterNewUserFormEndpoint:     MakeRegisterNewUserFormEndpoint(s),
+		UnblockUserEndpoint:             MakeUnblockUserEndpoint(s),
 		UserLoginFormEndpoint:           MakeUserLoginFormEndpoint(s),
 		UserRegisterFormEndpoint:        MakeUserRegisterFormEndpoint(s),
 		UserRegistrationAttemptEndpoint: MakeUserRegistrationAttemptEndpoint(s),
@@ -47,6 +53,15 @@ func New(s service.AuthService, mdw map[string][]endpoint.Middleware) Endpoints 
 	}
 	for _, m := range mdw["UserRegistrationAttempt"] {
 		eps.UserRegistrationAttemptEndpoint = m(eps.UserRegistrationAttemptEndpoint)
+	}
+	for _, m := range mdw["FetchUsers"] {
+		eps.FetchUsersEndpoint = m(eps.FetchUsersEndpoint)
+	}
+	for _, m := range mdw["BlockUser"] {
+		eps.BlockUserEndpoint = m(eps.BlockUserEndpoint)
+	}
+	for _, m := range mdw["UnblockUser"] {
+		eps.UnblockUserEndpoint = m(eps.UnblockUserEndpoint)
 	}
 	for _, m := range mdw["RegisterNewUserForm"] {
 		eps.RegisterNewUserFormEndpoint = m(eps.RegisterNewUserFormEndpoint)

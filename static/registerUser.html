@@ -73,41 +73,38 @@ body {
            <div id="success_message" class="h3 mb-3 alert alert-success"></div>
      <h1 class="h3 mb-3 font-weight-normal"><i class="fas fa-user-plus"></i>  Register User</h1>
 
-     <label for="inputPassword" class="sr-only">Name</label>
-     <input id="name" type="text" class="form-control" placeholder="Name" required>
+     <input id="name" type="text" class="form-control" placeholder="Name" required autofocus>
 <br>
-     <label for="inputEmail" class="sr-only">Email address</label>
-     <input id="email" type="email" id="inputEmail" class="form-control" placeholder="Email address" required autofocus>
+     <input id="email" type="email" class="form-control" placeholder="Email address" required autofocus>
+<br>
+
+     <textarea id="message" type="email" class="form-control" placeholder="Message" required autofocus></textarea>
+        
 
      <div class="checkbox mb-3">
          <hr>
          <br>
      </div>
-     <button id="submit" class="btn btn-lg btn-primary btn-block" type="button">Register</button>
+     <button id="submit" class="btn btn-lg btn-primary btn-block" type="button">Save</button>
    </form>
 
+
+<script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
 <script>
-   // MOCK
-   const URL = 'https://httpbin.org/post';
+
+
 
    document.getElementById('success_message').style.cssText="display:none"
    document.getElementById('error_message').style.cssText="display:none"
 
-   var cooki = getCookie("auth")
-   var body = document.getElementById('body')
-
-       if ((!cooki.isAdmin) || (cookie==undefined)) {
-         // MOCK
-         // document.getElementById('body').innerHTML="<h2 class='h3 mb-3' style='margin-left:800px'>Permission denied</h2>"
+       if ((!Cookies.get('key')) || ((Cookies.get('key')) && (!JSON.parse(Cookies.get('key')).isadmin))) {
+         document.getElementById('body').innerHTML="<h2 class='h3 mb-3' style='margin-left:800px'>Permission denied</h2>"
        }
-  
-           function getCookie(name) {
-             var matches = document.cookie.match(new RegExp(
-               "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
-             ));
-             return matches ? decodeURIComponent(matches[1]) : undefined;
-           }
+
 document.getElementById('submit').addEventListener('click', function() {
+
+const URL = "http://http://127.0.0.1:8081/register"
+
    fetch(URL, {
            method: 'post',
            headers: {
@@ -116,32 +113,38 @@ document.getElementById('submit').addEventListener('click', function() {
            },
            body: JSON.stringify({
                name: document.getElementById('name').value,
-               email: document.getElementById('email').value
+               email: document.getElementById('email').value,
+               message: document.getElementById('message').value
            })
        }).then((res) => {
            res.json()
        })
        .then((res) => {
-           document.getElementById('success_message').innerHTML = "User Successfully Registered"
-               document.getElementById('success_message').style.cssText="display:block"
                document.getElementById('name').value = ""
                document.getElementById('email').value = ""
-      
-           setTimeout(function(){
-               document.getElementById('success_message').style.cssText="display:none"
-           }, 2000)
+               document.getElementById('message').value = ""
+
+               document.getElementById('success_message').style.cssText="display:block"
+               document.getElementById('success_message').innerHTML = "User Successfully Registered"
+               setTimeout(function(){
+                document.getElementById('success_message').innerHTML = ""
+                document.getElementById('success_message').style.cssText="display:none"
+               }, 3000)
+
           console.log(res)
        })
-       .catch((err)=>{
-           document.getElementById('error_message').innerHTML = "User Registration Failed: " + err
-               document.getElementById('error_message').style.cssText="display:block"
+       .catch((res)=>{
                document.getElementById('name').value = ""
                document.getElementById('email').value = ""
-      
-           setTimeout(function(){
-               document.getElementById('error_message').style.cssText="display:none"
-           }, 2000)
-          console.log(err)
+               document.getElementById('message').value = ""
+
+               document.getElementById('success_message').style.cssText="display:block"
+               document.getElementById('success_message').innerHTML = "Error occured"
+               setTimeout(function(){
+                document.getElementById('success_message').innerHTML = ""
+                document.getElementById('success_message').style.cssText="display:none"
+               }, 3000)
+          console.log(res)
        });
 })
 </script>   

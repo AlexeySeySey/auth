@@ -4,9 +4,78 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
+    <title>Log in</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 </head>
 <body>
-       <h1>SIGN IN PAGE</h1>
+   
+
+        <form class="form-signin" style="width:500px !important; text-align: center !important;">
+                <div id="error_message" style="display: none" class="h3 mb-3 alert alert-danger"></div>
+                <div id="success_message" style="display: none" class="h3 mb-3 alert alert-success"></div>
+          <h1 class="h3 mb-3 font-weight-normal">  Sign In</h1>
+     
+
+          <div class="col-auto">
+                <label class="sr-only" for="inlineFormInputGroup">Email</label>
+                <div class="input-group mb-2">
+                  <div class="input-group-prepend">
+                    <div class="input-group-text">@</div>
+                  </div>
+                  <input type="email" class="form-control" id="inlineFormInputGroup" placeholder="Email">
+                </div>
+            </div>
+             
+     
+          <div class="checkbox mb-3">
+              <hr>
+              <br>
+          </div>
+          <button id="submit" class="btn btn-lg btn-primary btn-block" type="button" onclick="send()">Save</button>
+        </form>
+
+        <br>
+
+        <button class="btn btn-secondary" onclick="firstTimeHere()">First time here ?</button>
+
+
+<script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
+<script>
+
+function firstTimeHere(){
+    window.location.href="http://127.0.0.1:8000/registerAttempt.html"
+}        
+
+function send() {
+    if ((document.getElementById('inlineFormInputGroup').value == '')||(!document.getElementById('inlineFormInputGroup').value.includes('@'))) {
+        document.getElementById('error_message').innerHTML = "Invalid Email Passed"
+        throw "Validation Error"
+    }
+    fetch("http://127.0.0.1:8081/login",{
+        method:"POST",
+        body:JSON.stringify({
+           email: document.getElementById('inlineFormInputGroup').value.replace(/<\/?[^>]+(>|$)/g, "")
+        })
+    }).then((r)=>{
+        return r.json()
+    }).then((r)=>{
+        
+        if (Cookies.get('key')) Cookies.remove('key')
+
+        Cookies.set('key', JSON.stringify(r), { expires: r.expired_at });
+        console.log(window.location.href.split('?')[1])
+        window.location.href = window.location.href.split('?')[1]
+    }).catch((e)=>{
+        return e.json()
+    }).then((e)=>{
+                    document.getElementById("error_message").style.cssText="display:block"
+                    document.getElementById("error_message").firstChild.innerHTML = e
+        setTimeout(()=>{
+                 window.location.href = "http://127.0.0.1:8000/registerAttempt.html"
+        }, 3000)
+    })
+}
+      </script>
+
 </body>
 </html>
