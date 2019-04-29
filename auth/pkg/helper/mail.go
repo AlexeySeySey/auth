@@ -20,5 +20,6 @@ func SendEmail(from string, to string, subject string, message string, contentTy
 	m.SetBody(contentType, message)
 
 	// send email
-	return gomail.NewPlainDialer(env.MailHost, env.MailPort, env.SMTPConnectionUsername, env.SMTPConnectionPassword).DialAndSend(m)
+	err := gomail.NewPlainDialer(env.MailHost, env.MailPort, env.SMTPConnectionUsername, env.SMTPConnectionPassword).DialAndSend(m)
+	return err
 }
