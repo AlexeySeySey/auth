@@ -5,45 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Log in</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss/dist/tailwind.min.css" rel="stylesheet">
+    <!--<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">-->
 </head>
 <body>
-   
-
-        <form class="form-signin" style="width:500px !important; text-align: center !important;">
+    <div class="container max-w-lg mx-auto pt-10 pb-4 px-4">
+      <div class="inline-block align-middle relative w-full text-left bg-white shadow-md rounded p-5">
+        <form class="form-signin">
                 <div id="error_message" style="display: none" class="h3 mb-3 alert alert-danger"></div>
                 <div id="success_message" style="display: none" class="h3 mb-3 alert alert-success"></div>
-          <h1 class="h3 mb-3 font-weight-normal">  Sign In</h1>
-     
-
-          <div class="col-auto">
+          <h1 class="title text-xl font-bold mb-4">  Sign In</h1>
+          <div class="mb-6">
                 <label class="sr-only" for="inlineFormInputGroup">Email</label>
-                <div class="input-group mb-2">
-                  <div class="input-group-prepend">
-                    <div class="input-group-text">@</div>
-                  </div>
-                  <input type="email" class="form-control" id="inlineFormInputGroup" placeholder="Email">
-                </div>
+                  <input type="email" class=" mt-2 shadow appearance-none border rounded inline-block align-middle w-full  p-2 text-xs sm:text-base text-grey-darker leading-tight focus:outline-none focus:shadow-outline" id="inlineFormInputGroup" placeholder="Email">
             </div>
-             
-     
-          <div class="checkbox mb-3">
-              <hr>
-              <br>
-          </div>
-          <button id="submit" class="btn btn-lg btn-primary btn-block" type="button" onclick="send()">Save</button>
+        <div class="text-right">
+          <button id="submit" class="mb-6 bg-black hover:bg-grey-darkest text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="button" onclick="send()">Save</button>
+        </div>
         </form>
+      
+        
 
-        <br>
-
-        <button class="btn btn-secondary" onclick="firstTimeHere()">First time here ?</button>
-
+        <button class="underline hover:no-underline text-sm text-grey-darker cursor-pointer" onclick="firstTimeHere()">First time here?</button>
+      </div>
+    </div>
 
 <script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
 <script>
 
 function firstTimeHere(){
-    window.location.href="http://127.0.0.1:8080/registerAttempt.html"
+    window.location.href="http://127.0.0.1:8000/registerAttempt.html"
 }        
 
 function send() {

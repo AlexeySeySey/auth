@@ -7,11 +7,12 @@
    <meta name="author" content="">
 
    <title>Registration</title>
-   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+   <!--<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">-->
    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+   <link href="https://cdn.jsdelivr.net/npm/tailwindcss/dist/tailwind.min.css" rel="stylesheet">
 
    <style>
-html,body {
+/*html,body {
  height: 100%;
 }
 
@@ -61,36 +62,31 @@ body {
 #success_message{
    color: black !important;
    font-weight: bold !important;
-}
+}*/
    </style>
  </head>
 
- <body id="body" class="text-center">
+ <body id="body">
 
-
+<div class="container max-w-lg mx-auto pt-10 pb-4 px-4">
+  <div class="inline-block align-middle relative w-full text-left bg-white shadow-md rounded p-5">
    <form class="form-signin">
            <div id="error_message" class="h3 mb-3 alert alert-danger"></div>
            <div id="success_message" class="h3 mb-3 alert alert-success"></div>
-     <h1 class="h3 mb-3 font-weight-normal"><i class="fas fa-user-plus"></i>  Register User</h1>
+     <h1 class="title text-xl font-bold mb-2"><i class="fas fa-user-plus"></i>  Register User</h1>
 
-     <input id="name" type="text" class="form-control" placeholder="Name" required autofocus>
-<br>
-     <input id="email" type="email" class="form-control" placeholder="Email address" required autofocus>
-<br>
-
-     <textarea id="message" type="email" class="form-control" placeholder="Message" required autofocus></textarea>
-        
-
-     <div class="checkbox mb-3">
-         <hr>
-         <br>
-     </div>
-     <button id="submit" class="btn btn-lg btn-primary btn-block" type="button">Save</button>
+     <input id="name" type="text" class="form-control mt-2 shadow appearance-none border rounded inline-block align-middle w-full  p-2 text-xs sm:text-base text-grey-darker leading-tight focus:outline-none focus:shadow-outline" placeholder="Name" required autofocus>
+        <br>
+     <input id="email" type="email" class="form-control mt-2 shadow appearance-none border rounded inline-block align-middle w-full  p-2 text-xs sm:text-base text-grey-darker leading-tight focus:outline-none focus:shadow-outline" placeholder="Email address" required autofocus>
+        <br>
+     <textarea id="message" type="email" class="form-control mt-2 shadow appearance-none border rounded inline-block align-middle w-full  p-2 text-xs sm:text-base text-grey-darker leading-tight focus:outline-none focus:shadow-outline" placeholder="Message" required autofocus></textarea>
+    <div class="text-right">
+      <button id="submit" class="mt-6 bg-black hover:bg-grey-darkest text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="button">Save</button>
+    </div>
    </form>
-
-
-<script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
-<script>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script><script>
 
 
 
@@ -98,26 +94,31 @@ body {
    document.getElementById('error_message').style.cssText="display:none"
 
        if ((!Cookies.get('key')) || ((Cookies.get('key')) && (!JSON.parse(Cookies.get('key')).isadmin))) {
-         document.getElementById('body').innerHTML="<h2 class='h3 mb-3' style='margin-left:800px'>Permission denied</h2>"
+          // DEBUG
+        // document.getElementById('body').innerHTML="<h2 class='h3 mb-3' style='margin-left:800px'>Permission denied</h2>"
        }
 
 document.getElementById('submit').addEventListener('click', function() {
 
-const URL = "http://http://127.0.0.1:8081/register"
+const URL = "http://127.0.0.1:8081/register"
 
    fetch(URL, {
-           method: 'post',
+           method: 'POST',
            headers: {
                'Accept': 'application/json',
-               'Content-Type': 'application/json'
+               'Content-Type': 'application/json',
+               'Access-Control-Allow-Origin': '*'
            },
+           mode: 'no-cors',
            body: JSON.stringify({
+              creds: {
                name: document.getElementById('name').value,
                email: document.getElementById('email').value,
                message: document.getElementById('message').value
+              }
            })
        }).then((res) => {
-           res.json()
+           return res.json()
        })
        .then((res) => {
                document.getElementById('name').value = ""
@@ -144,7 +145,7 @@ const URL = "http://http://127.0.0.1:8081/register"
                 document.getElementById('success_message').innerHTML = ""
                 document.getElementById('success_message').style.cssText="display:none"
                }, 3000)
-          console.log(res)
+               console.log(res)
        });
 })
 </script>   

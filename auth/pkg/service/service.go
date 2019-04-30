@@ -76,10 +76,14 @@ func (b *basicAuthService) Register(ctx context.Context, creds entities.Credenti
 		return err
 	}
 
-	_, isAdmin, err := helper.IsUserExist(creds, &Mongo)
-	if err == nil {
+	user, isAdmin, err := helper.IsUserExist(creds, &Mongo)
+	if err != nil {
+		return err
+	}
+	if user != entities.User{} {
 		return ewrapper.Wrap(env.ErrUserAlreadyExist, env.ErrRegister)
 	}
+	fmt.Println(user)
 
 	tokenKey, err := helper.GenerateRandomString()
 	if err != nil {

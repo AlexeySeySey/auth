@@ -19,18 +19,15 @@ func IsUserExist(creds entities.Credentials, Mongo *db.Mongo) (user entities.Use
 		user, err = Mongo.Search(bson.M{
 			"email": creds.Email,
 		})
-		if err != nil {
-			return user, isAdmin, ewrapper.Wrap(err, env.ErrUserNotFound)
-		}
 	} else {
 		isAdmin = true
 		user, err = Mongo.Search(bson.M{
 			"email":    creds.Email,
 			"password": creds.Password,
 		})
-		if err != nil {
-			return user, false, ewrapper.Wrap(err, env.ErrUserNotFound)
-		}
+	}
+	if err != nil {
+		return entities.User{}, false, err
 	}
 	return user, isAdmin, nil
 }

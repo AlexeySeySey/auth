@@ -5,44 +5,84 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>User Registration</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <!--<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous"> -->
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss/dist/tailwind.min.css" rel="stylesheet">
+	
+	<style>
+	/*html,body {
+		height: 100%;
+	}
+
+	body {
+		 display: -ms-flexbox;
+		 display: flex;
+		 -ms-flex-align: center;
+		 align-items: center;
+		 padding-top: 40px;
+		 padding-bottom: 40px;
+		 background-color: #f5f5f5;
+	}
+	
+	form{
+		max-width:1360px;
+		width:100%;
+		margin:auto;
+	}
+
+    .form-inline .form-control{
+        width: 100%;
+    }
+
+    .input-group-prepend{
+        width: 41px;
+        float: left;
+    }
+
+    .input-group-prepend .form-control{
+        width: calc(100% - 41px)
+    }*/
+
+
+
+    
+    </style>
 </head>
-<body class="text-center"> 
-   
+<body > 
+   <div class="container max-w-lg mx-auto pt-10 pb-4 px-4">
+      <div class="inline-block align-middle relative w-full text-left bg-white shadow-md rounded p-5">
    
         <div id="GlobalError" style="display:none" class="alert alert-danger"><b></b></div>
         <div id="GlobalSuccess" style="display:none" class="alert alert-success"><b></b></div>
         <form class="form-inline">
                 <label class="sr-only" for="inlineFormInputName2">Name</label>
-                <input type="text" class="form-control mb-2 mr-sm-2" id="inlineFormInputName2" placeholder="Jane Doe">
+                <input type="text" class="mt-2 shadow appearance-none border rounded inline-block align-middle w-full  p-2 text-xs sm:text-base text-grey-darker leading-tight focus:outline-none focus:shadow-outline" id="inlineFormInputName2" placeholder="Jane Doe">
                 <div id="NameError" style="display:none" class="alert alert-danger"><b></b></div>
 
                 <br>
               
                 <label class="sr-only" for="inlineFormInputGroupUsername2">Email</label>
                 <div class="input-group mb-2 mr-sm-2">
-                  <div class="input-group-prepend">
-                    <div class="input-group-text">@</div>
-                  </div>
-                  <input type="email" class="form-control" id="inlineFormInputGroupUsername2" placeholder="Email">
+                  <input type="email" class="mt-2 shadow appearance-none border rounded inline-block align-middle w-full  p-2 text-xs sm:text-base text-grey-darker leading-tight focus:outline-none focus:shadow-outline" id="inlineFormInputGroupUsername2" placeholder="Email">
                 </div>
-                <div id="EmailError" style="display:none" class="alert alert-danger"><b></b></div>
+                <div id="EmailError" style="display:block;" class="alert alert-danger"><b></b></div>
 
                 <br>
 
                 <div class="form-group mb-2 mr-sm-2">
-                        <label for="exampleFormControlTextarea1">Message</label>
-                        <textarea class="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>
+                        <label for="exampleFormControlTextarea1" class="text-grey-darker">Message</label>
+                        <textarea class="mt-2 shadow appearance-none border rounded inline-block align-middle w-full  p-2 text-xs sm:text-base text-grey-darker leading-tight focus:outline-none focus:shadow-outline" id="exampleFormControlTextarea1" rows="3"></textarea>
                 </div>
                 <div id="MessageError" style="display:none" class="alert alert-danger"><b></b></div>
 
                 <br>
-              
-                <button type="button" class="btn btn-primary mb-2" onclick="send()">Submit</button>
+              <div class="text-right">
+                <button type="button" class="mb-6 bg-black hover:bg-grey-darkest text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" onclick="send()">Submit</button>
+            </div>
         </form>
  
-        
+       </div>
+    </div> 
 
     <script>
 

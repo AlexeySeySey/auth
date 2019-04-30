@@ -13,7 +13,7 @@ import (
 )
 
 func makeRegisterHandler(m *mux.Router, endpoints endpoint.Endpoints, options []http.ServerOption) {
-	m.Methods("POST").Path("/register").Handler(handlers.CORS(handlers.AllowedMethods([]string{"POST"}), handlers.AllowedHeaders([]string{"*"}), handlers.AllowedOrigins([]string{"*"}))(http.NewServer(endpoints.RegisterEndpoint, decodeRegisterRequest, encodeRegisterResponse, options...)))
+	m.Methods("POST", "OPTIONS").Path("/register").Handler(handlers.CORS(handlers.AllowedMethods([]string{"POST"}), handlers.AllowedHeaders([]string{"*"}), handlers.AllowedOrigins([]string{"*"}))(http.NewServer(endpoints.RegisterEndpoint, decodeRegisterRequest, encodeRegisterResponse, options...)))
 }
 
 func decodeRegisterRequest(_ context.Context, r *http1.Request) (interface{}, error) {
@@ -27,7 +27,11 @@ func encodeRegisterResponse(ctx context.Context, w http1.ResponseWriter, respons
 		ErrorEncoder(ctx, f.Failed(), w)
 		return nil
 	}
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	// w.Header().Set("Access-Control-Allow-Origin", "*")
+	// w.Header().Set("Access-Control-Request-Method", "*")
+	// w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	// w.Header().Set("Access-Control-Allow-Methods", "OPTIONS, GET, POST, PATCH, DELETE, PUT")
+	// w.Header().Set("Access-Control-Allow-Headers", "*")
 	err = json.NewEncoder(w).Encode(response)
 	return
 }
@@ -193,7 +197,7 @@ func encodeUserRegisterFormResponse(ctx context.Context, w http1.ResponseWriter,
 }
 
 func makeFetchUsersHandler(m *mux.Router, endpoints endpoint.Endpoints, options []http.ServerOption) {
-	m.Methods("POST").Path("/fetch-users").Handler(handlers.CORS(handlers.AllowedMethods([]string{"POST"}), handlers.AllowedOrigins([]string{"*"}))(http.NewServer(endpoints.FetchUsersEndpoint, decodeFetchUsersRequest, encodeFetchUsersResponse, options...)))
+	m.Methods("POST").Path("/fetch-users").Handler(handlers.CORS(handlers.AllowedMethods([]string{"POST", "OPTIONS"}), handlers.AllowedOrigins([]string{"*"}),  handlers.AllowedHeaders([]string{"*"}))(http.NewServer(endpoints.FetchUsersEndpoint, decodeFetchUsersRequest, encodeFetchUsersResponse, options...)))
 }
 
 func decodeFetchUsersRequest(_ context.Context, r *http1.Request) (interface{}, error) {
@@ -207,7 +211,8 @@ func encodeFetchUsersResponse(ctx context.Context, w http1.ResponseWriter, respo
 		ErrorEncoder(ctx, f.Failed(), w)
 		return nil
 	}
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+    w.Header().Set("Access-Control-Allow-Origin", "*")
 	err = json.NewEncoder(w).Encode(response)
 	return
 }
