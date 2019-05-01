@@ -2,8 +2,6 @@ package service
 
 import (
 	"context"
-	"fmt"
-	"time"
 
 	entities "todo_SELF/auth/pkg/entities"
 	env "todo_SELF/auth/pkg/env"
@@ -76,14 +74,13 @@ func (b *basicAuthService) Register(ctx context.Context, creds entities.Credenti
 		return err
 	}
 
-	user, isAdmin, err := helper.IsUserExist(creds, &Mongo)
+	_, exist, err := helper.IsUserExist(creds, &Mongo)
 	if err != nil {
 		return err
 	}
-	if user != entities.User{} {
+	if exist == true {
 		return ewrapper.Wrap(env.ErrUserAlreadyExist, env.ErrRegister)
 	}
-	fmt.Println(user)
 
 	tokenKey, err := helper.GenerateRandomString()
 	if err != nil {
@@ -97,23 +94,24 @@ func (b *basicAuthService) Register(ctx context.Context, creds entities.Credenti
 		Name:     creds.Name,
 		Token: entities.Key{
 			Token:      tokenKey,
-			IsAdmin:    isAdmin,
+			IsAdmin:    false,
 			Expired_at: expDateTime,
 		}})
 	if err != nil {
 		return err
 	}
 
-	if err = Redis.Set(tokenKey, string(id)); err != nil {
+	if err = Redis.Set(tokenKey, string(id.Hex())); err != nil {
 		return err
 	}
 
-	var (
+	const (
 		contentType = "text/html"
 		subject     = "Registration Accepted!"
+		message     = "You have been registered successfully. Welcome https://sandbox.vote.infoserv.org/"
 	)
 
-	return helper.SendEmail(env.AdminEmail, creds.Email, subject, creds.Message, contentType)
+	return helper.SendEmail(env.AdminEmail, creds.Email, subject, message, contentType)
 }
 
 func (b *basicAuthService) Login(ctx context.Context, creds entities.Credentials) (key entities.Key, err error) {
@@ -130,42 +128,41 @@ func (b *basicAuthService) Login(ctx context.Context, creds entities.Credentials
 	if err := helper.IsValidCreds(creds); err != nil {
 		return entities.Key{}, err
 	}
-	user, isAdmin, err := helper.IsUserExist(creds, &Mongo)
+	user, exist, err := helper.IsUserExist(creds, &Mongo)
 	if err != nil {
 		return entities.Key{}, err
 	}
-
-	fmt.Println(user)
-
+	if exist == false {
+		return entities.Key{}, ewrapper.Wrap(env.ErrCredentialsValidation, env.ErrUserNotFound)
+	}
 	token, err := helper.GenerateRandomString()
 	if err != nil {
 		return entities.Key{}, err
 	}
 	newKey := entities.Key{
 		Token:      token,
-		IsAdmin:    isAdmin,
+		IsAdmin:    user.Token.IsAdmin,
 		Expired_at: helper.TokenExpiration(),
 	}
 	if err := Mongo.Update(bson.M{"_id": user.Id}, bson.M{"Token": newKey}); err != nil {
 		return entities.Key{}, err
 	}
-
 	// delete old and set new, becouse token - is key
 	if err = Redis.Del(user.Token.Token); err != nil {
 		return entities.Key{}, err
 	}
-	if err = Redis.Set(token, string(user.Id)); err != nil {
+	if err = Redis.Set(token, string(user.Id.Hex())); err != nil {
 		return entities.Key{}, err
 	}
 
 	return entities.Key{
 		Token:      token,
-		IsAdmin:    isAdmin,
+		IsAdmin:    user.Token.IsAdmin,
 		Expired_at: helper.TokenExpiration(),
 	}, nil
 }
 
-func (b *basicAuthService) Access(ctx context.Context, key entities.Key) (e0 entities.Key, e1 error) {
+func (b *basicAuthService) Access(ctx context.Context, key entities.Key) (entities.Key, error) {
 	mgoSession, err := Mongo.Connect()
 	if err != nil {
 		return entities.Key{}, ewrapper.Wrap(err, env.ErrDBSession)
@@ -183,7 +180,7 @@ func (b *basicAuthService) Access(ctx context.Context, key entities.Key) (e0 ent
 	return key, nil
 }
 
-func (b *basicAuthService) Logout(ctx context.Context, key entities.Key) (e0 entities.Key, e1 error) {
+func (b *basicAuthService) Logout(ctx context.Context, key entities.Key) (entities.Key, error) {
 	mgoSession, err := Mongo.Connect()
 	if err != nil {
 		return entities.Key{}, ewrapper.Wrap(err, env.ErrDBSession)
@@ -194,18 +191,16 @@ func (b *basicAuthService) Logout(ctx context.Context, key entities.Key) (e0 ent
 	if err != nil {
 		return entities.Key{}, err
 	}
-	key.Expired_at = time.Now().Format(helper.TimeFormat)
-
 	userId, err := helper.IsValidToken(&Redis, key)
 	if err != nil {
 		return entities.Key{}, err
 	}
-
-	if err := Mongo.Update(bson.M{"_id": userId}, bson.M{"Token": key}); err != nil {
+	key = (entities.Key{})
+	if err = Mongo.Update(bson.M{"_id": bson.ObjectIdHex(userId)}, bson.M{"Token": key}); err != nil {
 		return entities.Key{}, err
 	}
-
-	return key, nil
+	err = Redis.Del(userId)
+	return key, err
 }
 
 func (b *basicAuthService) UserRegistrationAttempt(ctx context.Context, creds entities.Credentials) (err error) {
@@ -213,7 +208,8 @@ func (b *basicAuthService) UserRegistrationAttempt(ctx context.Context, creds en
 		contentType = "text/html"
 		subject     = "New Registration Attempt!"
 	)
-	return helper.SendEmail(creds.Email, env.AdminEmail, subject, creds.Message, contentType)
+	err = helper.SendEmail(creds.Email, env.AdminEmail, subject, creds.Message, contentType)
+	return err
 }
 
 func (b *basicAuthService) FetchUsers(ctx context.Context, key entities.Key) (users []entities.User, err error) {

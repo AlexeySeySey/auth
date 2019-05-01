@@ -13,23 +13,21 @@ import (
 	ewrapper "github.com/pkg/errors"
 )
 
-func IsUserExist(creds entities.Credentials, Mongo *db.Mongo) (user entities.User, isAdmin bool, err error) {
-	if creds.Password == "" {
-		isAdmin = false
-		user, err = Mongo.Search(bson.M{
-			"email": creds.Email,
-		})
-	} else {
-		isAdmin = true
-		user, err = Mongo.Search(bson.M{
-			"email":    creds.Email,
-			"password": creds.Password,
-		})
-	}
+// return true - exist, false - not
+func IsUserExist(creds entities.Credentials, Mongo *db.Mongo) (user entities.User, exist bool, err error) {
+	users, err := Mongo.Search(bson.M{
+		"email":    creds.Email,
+		"password": creds.Password,
+	})
 	if err != nil {
+		if err.Error() == "not found" {
+			err = nil
+		}
+	}
+	if len(users) == 0 {
 		return entities.User{}, false, err
 	}
-	return user, isAdmin, nil
+	return users[0], true, err
 }
 
 func IsValidCreds(creds entities.Credentials) error {

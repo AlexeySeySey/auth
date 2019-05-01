@@ -38,11 +38,11 @@ func (m *Mongo) Insert(user entities.User) (bson.ObjectId, error) {
 	return user.Id, nil
 }
 
-func (m *Mongo) Search(search bson.M) (entities.User, error) {
-	result := entities.User{}
-	err := m.GetCollection(m.mgoSession).Find(nil).Select(search).One(&result)
+func (m *Mongo) Search(search bson.M) ([]entities.User, error) {
+	result := []entities.User{}
+	err := m.GetCollection(m.mgoSession).Find(search).All(&result)
 	if err != nil {
-		return entities.User{}, err
+		return []entities.User{}, err
 	}
 	return result, nil
 }
@@ -64,10 +64,10 @@ func (m *Mongo) Update(where bson.M, new bson.M) error {
 
 func (m *Mongo) FetchUsers() ([]entities.User, error) {
 	users := []entities.User{}
-    if err := m.GetCollection(m.mgoSession).Find(nil).All(&users); err != nil {
+	if err := m.GetCollection(m.mgoSession).Find(nil).All(&users); err != nil {
 		return []entities.User{}, err
 	}
-    return users, nil
+	return users, nil
 }
 
 func (m *Mongo) DropAll() {

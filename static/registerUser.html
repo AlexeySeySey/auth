@@ -11,59 +11,6 @@
    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
    <link href="https://cdn.jsdelivr.net/npm/tailwindcss/dist/tailwind.min.css" rel="stylesheet">
 
-   <style>
-/*html,body {
- height: 100%;
-}
-
-body {
- display: -ms-flexbox;
- display: flex;
- -ms-flex-align: center;
- align-items: center;
- padding-top: 40px;
- padding-bottom: 40px;
- background-color: #f5f5f5;
-}
-
-.form-signin {
- width: 100%;
- max-width: 330px;
- padding: 15px;
- margin: auto;
-}
-.form-signin .checkbox {
- font-weight: 400;
-}
-.form-signin .form-control {
- position: relative;
- box-sizing: border-box;
- height: auto;
- padding: 10px;
- font-size: 16px;
-}
-.form-signin .form-control:focus {
- z-index: 2;
-}
-.form-signin input[type="email"] {
- margin-bottom: -1px;
- border-bottom-right-radius: 0;
- border-bottom-left-radius: 0;
-}
-.form-signin input[type="password"] {
- margin-bottom: 10px;
- border-top-left-radius: 0;
- border-top-right-radius: 0;
-}
-#error_message{
-   color: black !important;
-   font-weight: bold !important;
-}
-#success_message{
-   color: black !important;
-   font-weight: bold !important;
-}*/
-   </style>
  </head>
 
  <body id="body">
@@ -79,16 +26,17 @@ body {
         <br>
      <input id="email" type="email" class="form-control mt-2 shadow appearance-none border rounded inline-block align-middle w-full  p-2 text-xs sm:text-base text-grey-darker leading-tight focus:outline-none focus:shadow-outline" placeholder="Email address" required autofocus>
         <br>
-     <textarea id="message" type="email" class="form-control mt-2 shadow appearance-none border rounded inline-block align-middle w-full  p-2 text-xs sm:text-base text-grey-darker leading-tight focus:outline-none focus:shadow-outline" placeholder="Message" required autofocus></textarea>
-    <div class="text-right">
+        <div class="text-right">
       <button id="submit" class="mt-6 bg-black hover:bg-grey-darkest text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="button">Save</button>
     </div>
    </form>
   </div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script><script>
+<script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
 
 
+
+<script>
 
    document.getElementById('success_message').style.cssText="display:none"
    document.getElementById('error_message').style.cssText="display:none"
@@ -97,55 +45,45 @@ body {
           // DEBUG
         // document.getElementById('body').innerHTML="<h2 class='h3 mb-3' style='margin-left:800px'>Permission denied</h2>"
        }
+function showSome(id, message) {
+        document.getElementById(id).innerHTML = message
+        document.getElementById(id).style.cssText="display:block"
+        setTimeout(function(){
+            document.getElementById(id).style.cssText="display:none"
+        }, 2000)
+}
 
 document.getElementById('submit').addEventListener('click', function() {
 
-const URL = "http://127.0.0.1:8081/register"
-
-   fetch(URL, {
+fetch("http://127.0.0.1:8081/register", {
            method: 'POST',
            headers: {
-               'Accept': 'application/json',
-               'Content-Type': 'application/json',
-               'Access-Control-Allow-Origin': '*'
+               'Accept': 'application/json'
            },
-           mode: 'no-cors',
+           mode: 'cors',
+           credentials: "same-origin",
            body: JSON.stringify({
               creds: {
                name: document.getElementById('name').value,
-               email: document.getElementById('email').value,
-               message: document.getElementById('message').value
+               email: document.getElementById('email').value
               }
            })
-       }).then((res) => {
-           return res.json()
        })
-       .then((res) => {
-               document.getElementById('name').value = ""
-               document.getElementById('email').value = ""
-               document.getElementById('message').value = ""
-
-               document.getElementById('success_message').style.cssText="display:block"
-               document.getElementById('success_message').innerHTML = "User Successfully Registered"
-               setTimeout(function(){
-                document.getElementById('success_message').innerHTML = ""
-                document.getElementById('success_message').style.cssText="display:none"
-               }, 3000)
-
-          console.log(res)
+       .then((r)=>{
+          return r.text()
        })
-       .catch((res)=>{
-               document.getElementById('name').value = ""
-               document.getElementById('email').value = ""
-               document.getElementById('message').value = ""
-
-               document.getElementById('success_message').style.cssText="display:block"
-               document.getElementById('success_message').innerHTML = "Error occured"
-               setTimeout(function(){
-                document.getElementById('success_message').innerHTML = ""
-                document.getElementById('success_message').style.cssText="display:none"
-               }, 3000)
-               console.log(res)
+       .then((r)=>{
+            if (JSON.parse(r).error) {
+                showSome('error_message', JSON.parse(r).error)
+                setTimeout(()=>{
+                    window.location.href = "http://localhost:8080/registerAttempt.html"
+                }, 1500)
+            }else{
+                showSome('success_message', "OK")
+                // redirect ot index of app
+            }
+       }).catch((res)=>{
+           console.log('CLIENT FETCH ERROR')
        });
 })
 </script>   

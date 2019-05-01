@@ -1,13 +1,11 @@
 version: "2"
 services:
-  #8081
   auth:
     build:
       context: .
       dockerfile: auth/Dockerfile
     container_name: auth
     ports:
-    #- 8800:8081
     - 8081:8081
     restart: always
     volumes:
@@ -16,15 +14,18 @@ services:
   mongo:
     image: 'mongo:latest'
     container_name: 'mongo'
-    #host: '127.0.0.1'
     ports:
       - '27100:27017'     
+    volumes:
+    - ./data/mongo:/data/mongo
   redis:
     image: "redis:alpine"   
     restart: unless-stopped
     container_name: 'redis'
     ports:
       - '6379:6379'
+    volumes:
+    - ./data/redis:/data/redis
   web:
     container_name: 'web'
     image: 'nginx:latest'
@@ -33,4 +34,4 @@ services:
     volumes:
       - './static:/usr/share/nginx/html'
     depends_on:
-      - 'auth'    
+      - 'auth'  

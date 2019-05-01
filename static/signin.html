@@ -12,8 +12,8 @@
     <div class="container max-w-lg mx-auto pt-10 pb-4 px-4">
       <div class="inline-block align-middle relative w-full text-left bg-white shadow-md rounded p-5">
         <form class="form-signin">
-                <div id="error_message" style="display: none" class="h3 mb-3 alert alert-danger"></div>
-                <div id="success_message" style="display: none" class="h3 mb-3 alert alert-success"></div>
+                <div id="error_message" style="display: none; color:red" class="h3 mb-3 alert alert-danger"></div>
+                <div id="success_message" style="display: none; color:green" class="h3 mb-3 alert alert-success"></div>
           <h1 class="title text-xl font-bold mb-4">  Sign In</h1>
           <div class="mb-6">
                 <label class="sr-only" for="inlineFormInputGroup">Email</label>
@@ -37,34 +37,48 @@ function firstTimeHere(){
     window.location.href="http://127.0.0.1:8000/registerAttempt.html"
 }        
 
-function send() {
-    if ((document.getElementById('inlineFormInputGroup').value == '')||(!document.getElementById('inlineFormInputGroup').value.includes('@'))) {
-        document.getElementById('error_message').innerHTML = "Invalid Email Passed"
-        throw "Validation Error"
-    }
-    fetch("http://127.0.0.1:8081/login",{
-        method:"POST",
-        body:JSON.stringify({
-           email: document.getElementById('inlineFormInputGroup').value.replace(/<\/?[^>]+(>|$)/g, "")
-        })
-    }).then((r)=>{
-        return r.json()
-    }).then((r)=>{
-        
-        if (Cookies.get('key')) Cookies.remove('key')
+function showSome(id, message) {
+        document.getElementById(id).innerHTML = message
+        document.getElementById(id).style.cssText="display:block"
+        setTimeout(function(){
+            document.getElementById(id).style.cssText="display:none"
+        }, 2000)
+}
 
-        Cookies.set('key', JSON.stringify(r), { expires: r.expired_at });
-        console.log(window.location.href.split('?')[1])
-        window.location.href = window.location.href.split('?')[1]
-    }).catch((e)=>{
-        return e.json()
-    }).then((e)=>{
-                    document.getElementById("error_message").style.cssText="display:block"
-                    document.getElementById("error_message").firstChild.innerHTML = e
-        setTimeout(()=>{
-                 window.location.href = "http://127.0.0.1:8000/registerAttempt.html"
-        }, 3000)
-    })
+async function send() {
+    if ((document.getElementById('inlineFormInputGroup').value == '')||(!document.getElementById('inlineFormInputGroup').value.includes('@'))) {
+        showSome('error_message', "Invalid Email Passed")
+        throw "Invalid Email Passed"
+    }
+    fetch("http://127.0.0.1:8081/login", {
+           method: 'POST',
+           headers: {
+               'Accept': 'application/json'
+           },
+           mode: 'cors',
+           credentials: "same-origin",
+           body: JSON.stringify({
+            creds:{
+                email: document.getElementById('inlineFormInputGroup').value
+            }
+           })
+       })
+       .then((r)=>{
+          return r.text()
+       })
+       .then((r)=>{
+            if (JSON.parse(r).error) {
+                showSome('error_message', JSON.parse(r).error)
+                setTimeout(()=>{
+                    window.location.href = "http://localhost:8080/registerAttempt.html"
+                }, 1500)
+            }else{
+                showSome('success_message', "OK")
+                // redirect on index of app
+            }
+       }).catch((res)=>{
+           console.log('CLIENT FETCH ERROR')
+       });
 }
       </script>
 
