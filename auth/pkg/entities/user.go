@@ -17,6 +17,7 @@ type Key struct {
 // user in storage
 type User struct {
 	Id       bson.ObjectId `json:"id" bson:"_id"` 
+	IP       string        `json:"ip" bson:"ip"`
 	Email    string        `json:"email" bson:"email"` 
 	Name     string        `json:"name" bson:"name"` 
 	Password string        `json:"password" bson:"password"` 

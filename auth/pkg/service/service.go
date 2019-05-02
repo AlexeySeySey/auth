@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 
 	entities "todo_SELF/auth/pkg/entities"
 	env "todo_SELF/auth/pkg/env"
@@ -87,8 +88,14 @@ func (b *basicAuthService) Register(ctx context.Context, creds entities.Credenti
 		return err
 	}
 
+	ip, err := helper.ExternalIP()
+	if err != nil {
+		return err
+	}
+
 	expDateTime := helper.TokenExpiration()
 	id, err := Mongo.Insert(entities.User{
+		IP:       ip,
 		Email:    creds.Email,
 		Password: creds.Password,
 		Name:     creds.Name,
@@ -107,11 +114,10 @@ func (b *basicAuthService) Register(ctx context.Context, creds entities.Credenti
 
 	const (
 		contentType = "text/html"
-		subject     = "Registration Accepted!"
-		message     = "You have been registered successfully. Welcome https://sandbox.vote.infoserv.org/"
+		subject     = "Registration"
 	)
 
-	return helper.SendEmail(env.AdminEmail, creds.Email, subject, message, contentType)
+	return helper.SendEmail(env.AdminEmail, creds.Email, subject, creds.Message, contentType)
 }
 
 func (b *basicAuthService) Login(ctx context.Context, creds entities.Credentials) (key entities.Key, err error) {
@@ -144,7 +150,11 @@ func (b *basicAuthService) Login(ctx context.Context, creds entities.Credentials
 		IsAdmin:    user.Token.IsAdmin,
 		Expired_at: helper.TokenExpiration(),
 	}
-	if err := Mongo.Update(bson.M{"_id": user.Id}, bson.M{"Token": newKey}); err != nil {
+	ip, err := helper.ExternalIP()
+	if err != nil {
+		return entities.Key{}, err
+	}
+	if err := Mongo.Update(bson.M{"_id": user.Id}, bson.M{"Token": newKey, "IP": ip}); err != nil {
 		return entities.Key{}, err
 	}
 	// delete old and set new, becouse token - is key
@@ -191,12 +201,12 @@ func (b *basicAuthService) Logout(ctx context.Context, key entities.Key) (entiti
 	if err != nil {
 		return entities.Key{}, err
 	}
-	userId, err := helper.IsValidToken(&Redis, key)
+	userId, err := helper.IsValidToken(&Redis, &Mongo, key)
 	if err != nil {
 		return entities.Key{}, err
 	}
 	key = (entities.Key{})
-	if err = Mongo.Update(bson.M{"_id": bson.ObjectIdHex(userId)}, bson.M{"Token": key}); err != nil {
+	if err = Mongo.Update(bson.M{"_id": bson.ObjectIdHex(userId)}, bson.M{"Token": key, "IP": ""}); err != nil {
 		return entities.Key{}, err
 	}
 	err = Redis.Del(userId)
@@ -206,13 +216,18 @@ func (b *basicAuthService) Logout(ctx context.Context, key entities.Key) (entiti
 func (b *basicAuthService) UserRegistrationAttempt(ctx context.Context, creds entities.Credentials) (err error) {
 	var (
 		contentType = "text/html"
-		subject     = "New Registration Attempt!"
+		subject     = "Registration Request"
+        message     = fmt.Sprintf("A new user wants to be registered.<hr> <b>Name</b>: %s<br> <b>Email address</b>: %s<br> <b>Message</b>: %v", creds.Name, creds.Email, creds.Message)
 	)
-	err = helper.SendEmail(creds.Email, env.AdminEmail, subject, creds.Message, contentType)
-	return err
+	return helper.SendEmail(creds.Email, env.AdminEmail, subject, message, contentType)
 }
 
 func (b *basicAuthService) FetchUsers(ctx context.Context, key entities.Key) (users []entities.User, err error) {
+	ip, err := helper.ExternalIP()
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println("IP::::::::::::::", ip)
 	mgoSession, err := Mongo.Connect()
 	if err != nil {
 		return []entities.User{}, ewrapper.Wrap(err, env.ErrDBSession)

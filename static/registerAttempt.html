@@ -5,73 +5,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>User Registration</title>
-    <!--<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous"> -->
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss/dist/tailwind.min.css" rel="stylesheet">
-	
-	<style>
-	/*html,body {
-		height: 100%;
-	}
 
-	body {
-		 display: -ms-flexbox;
-		 display: flex;
-		 -ms-flex-align: center;
-		 align-items: center;
-		 padding-top: 40px;
-		 padding-bottom: 40px;
-		 background-color: #f5f5f5;
-	}
-	
-	form{
-		max-width:1360px;
-		width:100%;
-		margin:auto;
-	}
-
-    .form-inline .form-control{
-        width: 100%;
-    }
-
-    .input-group-prepend{
-        width: 41px;
-        float: left;
-    }
-
-    .input-group-prepend .form-control{
-        width: calc(100% - 41px)
-    }*/
-
-
-
-    
-    </style>
 </head>
 <body > 
-   <div class="container max-w-lg mx-auto pt-10 pb-4 px-4">
+   <div id="main-test" class="container max-w-lg mx-auto pt-10 pb-4 px-4">
       <div class="inline-block align-middle relative w-full text-left bg-white shadow-md rounded p-5">
    
+   <h4 style="text-align: center"> Please fill in the request form for registration </h4>
+   <h4 style="text-align: center"> You will receive an email when you are registered </h4>
+   <hr>
+
         <div id="GlobalError" style="display:none" class="alert alert-danger"><b></b></div>
         <div id="GlobalSuccess" style="display:none" class="alert alert-success"><b></b></div>
         <form class="form-inline">
-                <label class="sr-only" for="inlineFormInputName2">Name</label>
+                <p>Name:</p>
                 <input type="text" class="mt-2 shadow appearance-none border rounded inline-block align-middle w-full  p-2 text-xs sm:text-base text-grey-darker leading-tight focus:outline-none focus:shadow-outline" id="inlineFormInputName2" placeholder="Jane Doe">
                 <div id="NameError" style="display:none" class="alert alert-danger"><b></b></div>
 
                 <br>
-              
-                <label class="sr-only" for="inlineFormInputGroupUsername2">Email</label>
+                <br>
+                <p>Email Address:</p>  
                 <div class="input-group mb-2 mr-sm-2">
-                  <input type="email" class="mt-2 shadow appearance-none border rounded inline-block align-middle w-full  p-2 text-xs sm:text-base text-grey-darker leading-tight focus:outline-none focus:shadow-outline" id="inlineFormInputGroupUsername2" placeholder="Email">
+                  <input type="email" class="mt-2 shadow appearance-none border rounded inline-block align-middle w-full  p-2 text-xs sm:text-base text-grey-darker leading-tight focus:outline-none focus:shadow-outline" id="inlineFormInputGroupUsername2" placeholder="example@mail.com">
                 </div>
                 <div id="EmailError" style="display:block;" class="alert alert-danger"><b></b></div>
 
                 <br>
 
                 <div class="form-group mb-2 mr-sm-2">
-                        <label for="exampleFormControlTextarea1" class="text-grey-darker">Message</label>
-                        <textarea class="mt-2 shadow appearance-none border rounded inline-block align-middle w-full  p-2 text-xs sm:text-base text-grey-darker leading-tight focus:outline-none focus:shadow-outline" id="exampleFormControlTextarea1" rows="3"></textarea>
+                        <label for="exampleFormControlTextarea1">Message:</label>
+                        <textarea id="messageTextarea" class="mt-2 shadow appearance-none border rounded inline-block align-middle w-full  p-2 text-xs sm:text-base text-grey-darker leading-tight focus:outline-none focus:shadow-outline" id="exampleFormControlTextarea1" rows="3" placeholder="Leave a message to administrator"></textarea>
                 </div>
                 <div id="MessageError" style="display:none" class="alert alert-danger"><b></b></div>
 
@@ -90,23 +55,15 @@
              
              const errs = {
                  "name": "Invalid Name Passed",
-                 "email": "Invalid Email Passed",
+                 "email": "Please, check email address format",
                  "message": "Invalid Message Passed",
                  "all": "Error Occured: "
-             }
-
-             function validate(str){
-                return str.replace(/<\/?[^>]+(>|$)/g, "")
              }
 
              function showErr(id, mess, time) {
                 errors = true
                 document.getElementById(id).style.cssText="display:block"
-                document.getElementById(id).firstChild.innerHTML = message
-                setTimeout(()=>{
-                    document.getElementById(id).style.cssText="display:none"
-                    document.getElementById(id).firstChild.innerHTML = ''
-                }, time*1000)
+                document.getElementById(id).firstChild.innerHTML = mess
              }
 
              function sendSuccess(s) {
@@ -126,27 +83,61 @@
                 }, 3000)
              }
 
+             function showSome(id, message) {
+        document.getElementById(id).innerHTML = message
+        document.getElementById(id).style.cssText="display:block"
+        setTimeout(function(){
+            document.getElementById(id).style.cssText="display:none"
+        }, 2000)
+}
+    
+function validateEmail(email) {
+  var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  return re.test(email);
+}
             async function send() {
                  if ((document.getElementById('inlineFormInputName2').value == '')){
                    await showErr('NameError', errs.name, 3)
                  }
-                 if ((document.getElementById('inlineFormInputGroupUsername2').value == '') || (!document.getElementById('inlineFormInputGroupUsername2').value.includes('@'))) {
+                 if ((!validateEmail(document.getElementById('inlineFormInputGroupUsername2').value)) || (document.getElementById('inlineFormInputGroupUsername2').value == '') || (!document.getElementById('inlineFormInputGroupUsername2').value.includes('@'))) {
                     await showErr('EmailError', errs.email, 3)
                  }
-                 if (document.getElementById('inlineFormInputGroupUsername2').value == '') {
-                    await showErr('MessageError', errs.message, 3)
-                 }
-                 if (errors) throw "Error Occured"
-                 fetch("http://127.0.0.1:8081/register", {
-                     method: "POST",
-                     body: JSON.stringify({
-                          name: validate(document.getElementById('inlineFormInputName2').value),
-                          email: validate(document.getElementById('inlineFormInputGroupUsername2').value),
-                          message: validate(document.getElementById('inlineFormInputGroupUsername2').value)
-                     })
-                 }).then( r => r.json() ).then( r => { sendSuccess(r) } )
-                 .catch( e => e.json() ).then( e => { sendFailed(e) } )
-             }
+
+
+    fetch("http://127.0.0.1:8081/user-registration-attempt", {
+           method: 'POST',
+           headers: {
+               'Accept': 'application/json'
+           },
+           mode: 'cors',
+           credentials: "same-origin",
+           body: JSON.stringify({
+              creds: {
+                name: document.getElementById('inlineFormInputName2').value,
+                email: document.getElementById('inlineFormInputGroupUsername2').value,
+                message: document.getElementById('messageTextarea').value
+              }
+           })
+       })
+       .then((r)=>{
+          return r.text()
+       })
+       .then((r)=>{
+            if (JSON.parse(r).error) {
+                if (!JSON.parse(r).error.includes("gomail"))
+                showSome('GlobalError', JSON.parse(r).error)
+            }else{
+                showSome('GlobalSuccess', "OK")
+                document.getElementById('main-test').innerHTML = "<h1 style='text-align:center'>Your request is successfully sent!</h1>"
+                setTimeout(()=>{
+                    window.location.href = "http://localhost:8080/signin.html"
+                }, 1500)
+            }
+       }).catch((res)=>{
+           console.log('CLIENT FETCH ERROR')
+       });
+
+}
     </script>
 </body>
 </html>

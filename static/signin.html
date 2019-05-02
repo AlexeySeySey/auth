@@ -34,7 +34,7 @@
 <script>
 
 function firstTimeHere(){
-    window.location.href="http://127.0.0.1:8000/registerAttempt.html"
+    window.location.href="http://127.0.0.1:8080/registerAttempt.html"
 }        
 
 function showSome(id, message) {
@@ -73,8 +73,12 @@ async function send() {
                     window.location.href = "http://localhost:8080/registerAttempt.html"
                 }, 1500)
             }else{
+                localStorage.setItem('key', JSON.stringify(JSON.parse(r).key))
+                console.log(JSON.parse((localStorage.getItem('key'))))
                 showSome('success_message', "OK")
-                // redirect on index of app
+                setTimeout(()=>{
+                    window.location.href = "http://localhost:8000/"
+                }, 1500)
             }
        }).catch((res)=>{
            console.log('CLIENT FETCH ERROR')

@@ -3,6 +3,7 @@ package helper
 import (
 	"strings"
 	"time"
+	"fmt"
 
 	entities "todo_SELF/auth/pkg/entities"
 	env "todo_SELF/auth/pkg/env"
@@ -42,7 +43,7 @@ func IsValidCreds(creds entities.Credentials) error {
 	return nil
 }
 
-func IsValidToken(Redis *db.Redis, key entities.Key) (string, error) {
+func IsValidToken(Redis *db.Redis, Mongo *db.Mongo, key entities.Key) (string, error) {
 	// check length
 	if len(key.Token) < TokenLength {
 		return "", ewrapper.Wrap(env.ErrInvalidToken, env.ErrValidation)
