@@ -88,14 +88,9 @@ func (b *basicAuthService) Register(ctx context.Context, creds entities.Credenti
 		return err
 	}
 
-	ip, err := helper.ExternalIP()
-	if err != nil {
-		return err
-	}
-
 	expDateTime := helper.TokenExpiration()
 	id, err := Mongo.Insert(entities.User{
-		IP:       ip,
+		IP:       creds.IP,
 		Email:    creds.Email,
 		Password: creds.Password,
 		Name:     creds.Name,
@@ -121,6 +116,7 @@ func (b *basicAuthService) Register(ctx context.Context, creds entities.Credenti
 }
 
 func (b *basicAuthService) Login(ctx context.Context, creds entities.Credentials) (key entities.Key, err error) {
+	fmt.Println("__________________IP_____________: ", creds.IP)
 	mgoSession, err := Mongo.Connect()
 	if err != nil {
 		return entities.Key{}, ewrapper.Wrap(err, env.ErrDBSession)
@@ -150,11 +146,7 @@ func (b *basicAuthService) Login(ctx context.Context, creds entities.Credentials
 		IsAdmin:    user.Token.IsAdmin,
 		Expired_at: helper.TokenExpiration(),
 	}
-	ip, err := helper.ExternalIP()
-	if err != nil {
-		return entities.Key{}, err
-	}
-	if err := Mongo.Update(bson.M{"_id": user.Id}, bson.M{"Token": newKey, "IP": ip}); err != nil {
+	if err := Mongo.Update(bson.M{"_id": user.Id}, bson.M{"Token": newKey, "IP": creds.IP}); err != nil {
 		return entities.Key{}, err
 	}
 	// delete old and set new, becouse token - is key
@@ -166,6 +158,7 @@ func (b *basicAuthService) Login(ctx context.Context, creds entities.Credentials
 	}
 
 	return entities.Key{
+		IP:         creds.IP,
 		Token:      token,
 		IsAdmin:    user.Token.IsAdmin,
 		Expired_at: helper.TokenExpiration(),
@@ -183,7 +176,7 @@ func (b *basicAuthService) Access(ctx context.Context, key entities.Key) (entiti
 	if err != nil {
 		return entities.Key{}, err
 	}
-	_, err = helper.IsValidToken(&Redis, key)
+	_, err = helper.IsValidToken(&Redis, &Mongo, key)
 	if err != nil {
 		return entities.Key{}, err
 	}
@@ -201,6 +194,7 @@ func (b *basicAuthService) Logout(ctx context.Context, key entities.Key) (entiti
 	if err != nil {
 		return entities.Key{}, err
 	}
+
 	userId, err := helper.IsValidToken(&Redis, &Mongo, key)
 	if err != nil {
 		return entities.Key{}, err
@@ -217,17 +211,13 @@ func (b *basicAuthService) UserRegistrationAttempt(ctx context.Context, creds en
 	var (
 		contentType = "text/html"
 		subject     = "Registration Request"
-        message     = fmt.Sprintf("A new user wants to be registered.<hr> <b>Name</b>: %s<br> <b>Email address</b>: %s<br> <b>Message</b>: %v", creds.Name, creds.Email, creds.Message)
+		message     = fmt.Sprintf("A new user wants to be registered.<hr> <b>Name</b>: %s<br> <b>Email address</b>: %s<br> <b>Message</b>: %v", creds.Name, creds.Email, creds.Message)
 	)
 	return helper.SendEmail(creds.Email, env.AdminEmail, subject, message, contentType)
 }
 
 func (b *basicAuthService) FetchUsers(ctx context.Context, key entities.Key) (users []entities.User, err error) {
-	ip, err := helper.ExternalIP()
-	if err != nil {
-		return nil, err
-	}
-	fmt.Println("IP::::::::::::::", ip)
+	fmt.Println("IP::::::::::::::", key.IP)
 	mgoSession, err := Mongo.Connect()
 	if err != nil {
 		return []entities.User{}, ewrapper.Wrap(err, env.ErrDBSession)

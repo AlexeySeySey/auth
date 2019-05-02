@@ -3,7 +3,6 @@ package helper
 import (
 	"strings"
 	"time"
-	"fmt"
 
 	entities "todo_SELF/auth/pkg/entities"
 	env "todo_SELF/auth/pkg/env"
@@ -52,7 +51,18 @@ func IsValidToken(Redis *db.Redis, Mongo *db.Mongo, key entities.Key) (string, e
 	// check storage
 	userId, err := Redis.Get(key.Token)
 	if err != nil {
-		return "", err
+		if err.Error() == "not found" {
+			users, err := Mongo.Search(bson.M{
+				"IP": key.IP,
+			})
+			if (len(users) == 0) || (err != nil) {
+				return "", err
+			} else {
+				userId = users[0].Id.Hex()
+			}
+		} else {
+			return "", err
+		}
 	}
 
 	// check if expired

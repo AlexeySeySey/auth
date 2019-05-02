@@ -32,7 +32,6 @@
    </form>
   </div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
 
 
 
@@ -41,10 +40,8 @@
    document.getElementById('success_message').style.cssText="display:none"
    document.getElementById('error_message').style.cssText="display:none"
 
-       if ((!Cookies.get('key')) || ((Cookies.get('key')) && (!JSON.parse(Cookies.get('key')).isadmin))) {
-          // DEBUG
-        // document.getElementById('body').innerHTML="<h2 class='h3 mb-3' style='margin-left:800px'>Permission denied</h2>"
-       }
+          // DEBUG - CHECK IS ADMIN HERE
+
 function showSome(id, message) {
         document.getElementById(id).innerHTML = message
         document.getElementById(id).style.cssText="display:block"

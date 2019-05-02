@@ -24,18 +24,16 @@
         </div>
         </form>
       
-        
-
         <button class="underline hover:no-underline text-sm text-grey-darker cursor-pointer" onclick="firstTimeHere()">First time here?</button>
-      </div>
+      <input type="hidden" id="identifier_field_test">
     </div>
-
-<script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
+    </div>  
 <script>
+window.onload = () => {}
 
 function firstTimeHere(){
     window.location.href="http://127.0.0.1:8080/registerAttempt.html"
-}        
+} 
 
 function showSome(id, message) {
         document.getElementById(id).innerHTML = message
@@ -44,11 +42,10 @@ function showSome(id, message) {
             document.getElementById(id).style.cssText="display:none"
         }, 2000)
 }
-
 async function send() {
     if ((document.getElementById('inlineFormInputGroup').value == '')||(!document.getElementById('inlineFormInputGroup').value.includes('@'))) {
         showSome('error_message', "Invalid Email Passed")
-        throw "Invalid Email Passed"
+        console.log("Invalid Email Passed")
     }
     fetch("http://127.0.0.1:8081/login", {
            method: 'POST',
@@ -59,6 +56,7 @@ async function send() {
            credentials: "same-origin",
            body: JSON.stringify({
             creds:{
+                ip: document.getElementById('identifier_field_test').value,
                 email: document.getElementById('inlineFormInputGroup').value
             }
            })
@@ -73,18 +71,18 @@ async function send() {
                     window.location.href = "http://localhost:8080/registerAttempt.html"
                 }, 1500)
             }else{
-                localStorage.setItem('key', JSON.stringify(JSON.parse(r).key))
-                console.log(JSON.parse((localStorage.getItem('key'))))
+                window.addEventListener("message", function(event) {
+                    let key = event.data + '?key' + JSON.stringify(r)
+                    console.log(key)
+                    window.location.href = key
+                }, false);
                 showSome('success_message', "OK")
-                setTimeout(()=>{
-                    window.location.href = "http://localhost:8000/"
-                }, 1500)
             }
        }).catch((res)=>{
            console.log('CLIENT FETCH ERROR')
        });
 }
-      </script>
+</script>
 
 </body>
 </html>
