@@ -18,9 +18,9 @@ type Endpoints struct {
 	FetchUsersEndpoint              endpoint.Endpoint
 	BlockUserEndpoint               endpoint.Endpoint
 	UnblockUserEndpoint             endpoint.Endpoint
-	RegisterNewUserFormEndpoint     endpoint.Endpoint
-	UserLoginFormEndpoint           endpoint.Endpoint
-	UserRegisterFormEndpoint        endpoint.Endpoint
+	SearchUsersEndpoint             endpoint.Endpoint
+	DropUserEndpoint                endpoint.Endpoint
+	UpdateUserEndpoint              endpoint.Endpoint
 }
 
 // New returns a Endpoints struct that wraps the provided service, and wires in all of the
@@ -33,11 +33,11 @@ func New(s service.AuthService, mdw map[string][]endpoint.Middleware) Endpoints 
 		LoginEndpoint:                   MakeLoginEndpoint(s),
 		LogoutEndpoint:                  MakeLogoutEndpoint(s),
 		RegisterEndpoint:                MakeRegisterEndpoint(s),
-		RegisterNewUserFormEndpoint:     MakeRegisterNewUserFormEndpoint(s),
 		UnblockUserEndpoint:             MakeUnblockUserEndpoint(s),
-		UserLoginFormEndpoint:           MakeUserLoginFormEndpoint(s),
-		UserRegisterFormEndpoint:        MakeUserRegisterFormEndpoint(s),
 		UserRegistrationAttemptEndpoint: MakeUserRegistrationAttemptEndpoint(s),
+		SearchUsersEndpoint:             MakeSearchUsersEndpoint(s),
+		DropUserEndpoint:                MakeDropUserEndpoint(s),
+		UpdateUserEndpoint:              MakeUpdateUserEndpoint(s),
 	}
 	for _, m := range mdw["Register"] {
 		eps.RegisterEndpoint = m(eps.RegisterEndpoint)
@@ -63,14 +63,14 @@ func New(s service.AuthService, mdw map[string][]endpoint.Middleware) Endpoints 
 	for _, m := range mdw["UnblockUser"] {
 		eps.UnblockUserEndpoint = m(eps.UnblockUserEndpoint)
 	}
-	for _, m := range mdw["RegisterNewUserForm"] {
-		eps.RegisterNewUserFormEndpoint = m(eps.RegisterNewUserFormEndpoint)
+	for _, m := range mdw["SearchUsers"] {
+		eps.SearchUsersEndpoint = m(eps.SearchUsersEndpoint)
 	}
-	for _, m := range mdw["UserLoginForm"] {
-		eps.UserLoginFormEndpoint = m(eps.UserLoginFormEndpoint)
+	for _, m := range mdw["DropUser"] {
+		eps.DropUserEndpoint = m(eps.DropUserEndpoint)
 	}
-	for _, m := range mdw["UserRegisterForm"] {
-		eps.UserRegisterFormEndpoint = m(eps.UserRegisterFormEndpoint)
+	for _, m := range mdw["UpdateUser"] {
+		eps.UpdateUserEndpoint = m(eps.UpdateUserEndpoint)
 	}
 	return eps
 }

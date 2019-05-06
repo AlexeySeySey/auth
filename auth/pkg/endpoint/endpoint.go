@@ -81,16 +81,14 @@ type LogoutRequest struct {
 }
 
 type LogoutResponse struct {
-	E0 entities.Key `json:"e0"`
 	E1 error        `json:"e1"`
 }
 
 func MakeLogoutEndpoint(s service.AuthService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(LogoutRequest)
-		e0, e1 := s.Logout(ctx, req.Key)
+		e1 := s.Logout(ctx, req.Key)
 		return LogoutResponse{
-			E0: e0,
 			E1: e1,
 		}, nil
 	}
@@ -151,13 +149,13 @@ func (e Endpoints) Access(ctx context.Context, key entities.Key) (e0 entities.Ke
 	return response.(AccessResponse).E0, response.(AccessResponse).E1
 }
 
-func (e Endpoints) Logout(ctx context.Context, key entities.Key) (e0 entities.Key, e1 error) {
+func (e Endpoints) Logout(ctx context.Context, key entities.Key) (e1 error) {
 	request := LogoutRequest{Key: key}
 	response, err := e.LogoutEndpoint(ctx, request)
 	if err != nil {
 		return
 	}
-	return response.(LogoutResponse).E0, response.(LogoutResponse).E1
+	return response.(LogoutResponse).E1
 }
 
 func (e Endpoints) UserRegistrationAttempt(ctx context.Context, creds entities.Credentials) (err error) {
@@ -169,89 +167,6 @@ func (e Endpoints) UserRegistrationAttempt(ctx context.Context, creds entities.C
 	return response.(UserRegistrationAttemptResponse).Err
 }
 
-type RegisterNewUserFormRequest struct{}
-
-type RegisterNewUserFormResponse struct {
-	Page     string `json:"page"`
-	Executer string `json:"executer"`
-	E0       error  `json:"e0"`
-}
-
-func MakeRegisterNewUserFormEndpoint(s service.AuthService) endpoint.Endpoint {
-	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		page, executer, e0 := s.RegisterNewUserForm(ctx)
-		return RegisterNewUserFormResponse{Page: page, Executer: executer, E0: e0}, nil
-	}
-}
-
-func (r RegisterNewUserFormResponse) Failed() error {
-	return r.E0
-}
-
-type UserLoginFormRequest struct{}
-
-type UserLoginFormResponse struct {
-	Page     string `json:"page"`
-	Executer string `json:"executer"`
-	E0       error  `json:"e0"`
-}
-
-func MakeUserLoginFormEndpoint(s service.AuthService) endpoint.Endpoint {
-	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		page, ex, e0 := s.UserLoginForm(ctx)
-		return UserLoginFormResponse{Page: page, Executer: ex, E0: e0}, nil
-	}
-}
-
-func (r UserLoginFormResponse) Failed() error {
-	return r.E0
-}
-
-type UserRegisterFormRequest struct{}
-
-type UserRegisterFormResponse struct {
-	Page     string `json:"page"`
-	Executer string `json:"executer"`
-	E0       error  `json:"e0"`
-}
-
-func MakeUserRegisterFormEndpoint(s service.AuthService) endpoint.Endpoint {
-	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		page, ex, e0 := s.UserRegisterForm(ctx)
-		return UserRegisterFormResponse{Page: page, Executer: ex, E0: e0}, nil
-	}
-}
-
-func (r UserRegisterFormResponse) Failed() error {
-	return r.E0
-}
-
-func (e Endpoints) RegisterNewUserForm(ctx context.Context) (page string, ex string, e0 error) {
-	request := RegisterNewUserFormRequest{}
-	response, err := e.RegisterNewUserFormEndpoint(ctx, request)
-	if err != nil {
-		return
-	}
-	return response.(RegisterNewUserFormResponse).Page, response.(RegisterNewUserFormResponse).Executer, response.(RegisterNewUserFormResponse).E0
-}
-
-func (e Endpoints) UserLoginForm(ctx context.Context) (page string, ex string, e0 error) {
-	request := UserLoginFormRequest{}
-	response, err := e.UserLoginFormEndpoint(ctx, request)
-	if err != nil {
-		return
-	}
-	return response.(UserLoginFormResponse).Page, response.(UserLoginFormResponse).Executer, response.(UserLoginFormResponse).E0
-}
-
-func (e Endpoints) UserRegisterForm(ctx context.Context) (page string, ex string, e0 error) {
-	request := UserRegisterFormRequest{}
-	response, err := e.UserRegisterFormEndpoint(ctx, request)
-	if err != nil {
-		return
-	}
-	return response.(UserRegisterFormResponse).Page, response.(UserRegisterFormResponse).Executer, response.(UserRegisterFormResponse).E0
-}
 
 type FetchUsersRequest struct {
 	Key entities.Key `json:"key"`
@@ -288,7 +203,7 @@ func (e Endpoints) FetchUsers(ctx context.Context, key entities.Key) (users []en
 
 // BlockUserRequest collects the request parameters for the BlockUser method.
 type BlockUserRequest struct {
-	Id string `json:"id"`
+	Key entities.Key `json:"key"`
 }
 
 // BlockUserResponse collects the response parameters for the BlockUser method.
@@ -300,7 +215,7 @@ type BlockUserResponse struct {
 func MakeBlockUserEndpoint(s service.AuthService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(BlockUserRequest)
-		err := s.BlockUser(ctx, req.Id)
+		err := s.BlockUser(ctx, req.Key)
 		return BlockUserResponse{Err: err}, nil
 	}
 }
@@ -312,7 +227,7 @@ func (r BlockUserResponse) Failed() error {
 
 // UnblockUserRequest collects the request parameters for the UnblockUser method.
 type UnblockUserRequest struct {
-	Id string `json:"id"`
+	Key entities.Key `json:"key"`
 }
 
 // UnblockUserResponse collects the response parameters for the UnblockUser method.
@@ -324,7 +239,7 @@ type UnblockUserResponse struct {
 func MakeUnblockUserEndpoint(s service.AuthService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(UnblockUserRequest)
-		err := s.UnblockUser(ctx, req.Id)
+		err := s.UnblockUser(ctx, req.Key)
 		return UnblockUserResponse{Err: err}, nil
 	}
 }
@@ -335,8 +250,8 @@ func (r UnblockUserResponse) Failed() error {
 }
 
 // BlockUser implements Service. Primarily useful in a client.
-func (e Endpoints) BlockUser(ctx context.Context, id string) (err error) {
-	request := BlockUserRequest{Id: id}
+func (e Endpoints) BlockUser(ctx context.Context, key entities.Key) (err error) {
+	request := BlockUserRequest{Key: key}
 	response, err := e.BlockUserEndpoint(ctx, request)
 	if err != nil {
 		return
@@ -345,11 +260,103 @@ func (e Endpoints) BlockUser(ctx context.Context, id string) (err error) {
 }
 
 // UnblockUser implements Service. Primarily useful in a client.
-func (e Endpoints) UnblockUser(ctx context.Context, id string) (err error) {
-	request := UnblockUserRequest{Id: id}
+func (e Endpoints) UnblockUser(ctx context.Context, key entities.Key) (err error) {
+	request := UnblockUserRequest{Key: key}
 	response, err := e.UnblockUserEndpoint(ctx, request)
 	if err != nil {
 		return
 	}
 	return response.(UnblockUserResponse).Err
 }
+
+type SearchUsersRequest struct {
+	Key entities.Key `json:"key"`
+}
+
+type SearchUsersResponse struct {
+	Users []entities.User `json:"users"`
+	Err error `json:"error"`
+}
+
+func MakeSearchUsersEndpoint(s service.AuthService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(SearchUsersRequest)
+		users, err := s.SearchUsers(ctx, req.Key)
+		return SearchUsersResponse{Users: users, Err: err}, nil
+	}
+}
+
+func (r SearchUsersResponse) Failed() error {
+	return r.Err
+}
+
+func (e Endpoints) SearchUsers(ctx context.Context, key entities.Key) (users []entities.User, err error) {
+	request := SearchUsersRequest{Key: key}
+	response, err := e.SearchUsersEndpoint(ctx, request)
+	if err != nil {
+		return
+	}
+	return response.(SearchUsersResponse).Users, response.(SearchUsersResponse).Err
+}
+
+type DropUserRequest struct {
+	Key entities.Key `json:"key"`
+}
+
+type DropUserResponse struct {
+	Err error `json:"error"`
+}
+
+func MakeDropUserEndpoint(s service.AuthService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(DropUserRequest)
+		err := s.DropUser(ctx, req.Key)
+		return DropUserResponse{Err: err}, nil
+	}
+}
+
+func (r DropUserResponse) Failed() error {
+	return r.Err
+}
+
+func (e Endpoints) DropUser(ctx context.Context, key entities.Key) (err error) {
+	request := DropUserRequest{Key: key}
+	response, err := e.DropUserEndpoint(ctx, request)
+	if err != nil {
+		return
+	}
+	return response.(DropUserResponse).Err
+}
+
+
+/////////////////////
+type UpdateUserRequest struct {
+	Key entities.Key `json:"key"`
+	User entities.User `json:"user"`
+}
+
+type UpdateUserResponse struct {
+	Err error `json:"error"`
+}
+
+func MakeUpdateUserEndpoint(s service.AuthService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(UpdateUserRequest)
+		err := s.UpdateUser(ctx, req.User, req.Key)
+		return UpdateUserResponse{Err: err}, nil
+	}
+}
+
+func (r UpdateUserResponse) Failed() error {
+	return r.Err
+}
+
+func (e Endpoints) UpdateUser(ctx context.Context, user entities.User, key entities.Key) (err error) {
+	request := UpdateUserRequest{Key: key, User: user}
+	response, err := e.UpdateUserEndpoint(ctx, request)
+	if err != nil {
+		return
+	}
+	return response.(UpdateUserResponse).Err
+}
+/////////////////////////

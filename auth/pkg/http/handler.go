@@ -135,67 +135,6 @@ type errorWrapper struct {
 	Error string `json:"error"`
 }
 
-func makeRegisterNewUserFormHandler(m *mux.Router, endpoints endpoint.Endpoints, options []http.ServerOption) {
-	m.Methods("GET").Path("/register-new-user-form").Handler(handlers.CORS(handlers.AllowedMethods([]string{"POST"}), handlers.AllowedHeaders([]string{"*"}), handlers.AllowedOrigins([]string{"*"}))(http.NewServer(endpoints.RegisterNewUserFormEndpoint, decodeRegisterNewUserFormRequest, encodeRegisterNewUserFormResponse, options...)))
-}
-
-func decodeRegisterNewUserFormRequest(_ context.Context, r *http1.Request) (interface{}, error) {
-	req := endpoint.RegisterNewUserFormRequest{}
-
-	return req, nil
-}
-
-func encodeRegisterNewUserFormResponse(ctx context.Context, w http1.ResponseWriter, response interface{}) (err error) {
-	if f, ok := response.(endpoint.Failure); ok && f.Failed() != nil {
-		ErrorEncoder(ctx, f.Failed(), w)
-		return nil
-	}
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	err = json.NewEncoder(w).Encode(response)
-	return
-}
-
-func makeUserLoginFormHandler(m *mux.Router, endpoints endpoint.Endpoints, options []http.ServerOption) {
-	m.Methods("GET").Path("/user-login-form").Handler(handlers.CORS(handlers.AllowedMethods([]string{"POST"}), handlers.AllowedHeaders([]string{"*"}), handlers.AllowedOrigins([]string{"*"}))(http.NewServer(endpoints.UserLoginFormEndpoint, decodeUserLoginFormRequest, encodeUserLoginFormResponse, options...)))
-}
-
-func decodeUserLoginFormRequest(_ context.Context, r *http1.Request) (interface{}, error) {
-	req := endpoint.UserLoginFormRequest{}
-
-	return req, nil
-
-}
-
-func encodeUserLoginFormResponse(ctx context.Context, w http1.ResponseWriter, response interface{}) (err error) {
-	if f, ok := response.(endpoint.Failure); ok && f.Failed() != nil {
-		ErrorEncoder(ctx, f.Failed(), w)
-		return nil
-	}
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	err = json.NewEncoder(w).Encode(response)
-	return
-}
-
-func makeUserRegisterFormHandler(m *mux.Router, endpoints endpoint.Endpoints, options []http.ServerOption) {
-	m.Methods("GET").Path("/user-register-form").Handler(handlers.CORS(handlers.AllowedMethods([]string{"POST"}), handlers.AllowedHeaders([]string{"*"}), handlers.AllowedOrigins([]string{"*"}))(http.NewServer(endpoints.UserRegisterFormEndpoint, decodeUserRegisterFormRequest, encodeUserRegisterFormResponse, options...)))
-}
-
-func decodeUserRegisterFormRequest(_ context.Context, r *http1.Request) (interface{}, error) {
-	req := endpoint.UserRegisterFormRequest{}
-
-	return req, nil
-}
-
-func encodeUserRegisterFormResponse(ctx context.Context, w http1.ResponseWriter, response interface{}) (err error) {
-	if f, ok := response.(endpoint.Failure); ok && f.Failed() != nil {
-		ErrorEncoder(ctx, f.Failed(), w)
-		return nil
-	}
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	err = json.NewEncoder(w).Encode(response)
-	return
-}
-
 func makeFetchUsersHandler(m *mux.Router, endpoints endpoint.Endpoints, options []http.ServerOption) {
 	m.Methods("POST").Path("/fetch-users").Handler(handlers.CORS(handlers.AllowedMethods([]string{"POST", "OPTIONS"}), handlers.AllowedOrigins([]string{"*"}),  handlers.AllowedHeaders([]string{"*"}))(http.NewServer(endpoints.FetchUsersEndpoint, decodeFetchUsersRequest, encodeFetchUsersResponse, options...)))
 }
@@ -242,6 +181,8 @@ func encodeBlockUserResponse(ctx context.Context, w http1.ResponseWriter, respon
 	return
 }
 
+
+//////////////////////////////////////////////////////////////////////
 // makeUnblockUserHandler creates the handler logic
 func makeUnblockUserHandler(m *mux.Router, endpoints endpoint.Endpoints, options []http.ServerOption) {
 	m.Methods("POST").Path("/unblock-user").Handler(handlers.CORS(handlers.AllowedMethods([]string{"POST"}), handlers.AllowedOrigins([]string{"*"}))(http.NewServer(endpoints.UnblockUserEndpoint, decodeUnblockUserRequest, encodeUnblockUserResponse, options...)))
@@ -266,3 +207,78 @@ func encodeUnblockUserResponse(ctx context.Context, w http1.ResponseWriter, resp
 	err = json.NewEncoder(w).Encode(response)
 	return
 }
+/////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////
+func makeSearchUsersHandler(m *mux.Router, endpoints endpoint.Endpoints, options []http.ServerOption) {
+	m.Methods("POST").Path("/search-users").Handler(handlers.CORS(handlers.AllowedMethods([]string{"POST"}), handlers.AllowedOrigins([]string{"*"}))(http.NewServer(endpoints.SearchUsersEndpoint, decodeSearchUsersRequest, encodeSearchUsersResponse, options...)))
+}
+func decodeSearchUsersRequest(_ context.Context, r *http1.Request) (interface{}, error) {
+	req := endpoint.SearchUsersRequest{}
+	err := json.NewDecoder(r.Body).Decode(&req)
+	return req, err
+}
+func encodeSearchUsersResponse(ctx context.Context, w http1.ResponseWriter, response interface{}) (err error) {
+	if f, ok := response.(endpoint.Failure); ok && f.Failed() != nil {
+		ErrorEncoder(ctx, f.Failed(), w)
+		return nil
+	}
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	err = json.NewEncoder(w).Encode(response)
+	return
+}
+/////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////
+func makeDropUserHandler(m *mux.Router, endpoints endpoint.Endpoints, options []http.ServerOption) {
+	m.Methods("POST").Path("/drop-user").Handler(handlers.CORS(handlers.AllowedMethods([]string{"POST"}), handlers.AllowedOrigins([]string{"*"}))(http.NewServer(endpoints.DropUserEndpoint, decodeDropUserRequest, encodeDropUserResponse, options...)))
+}
+func decodeDropUserRequest(_ context.Context, r *http1.Request) (interface{}, error) {
+	req := endpoint.DropUserRequest{}
+	err := json.NewDecoder(r.Body).Decode(&req)
+	return req, err
+}
+func encodeDropUserResponse(ctx context.Context, w http1.ResponseWriter, response interface{}) (err error) {
+	if f, ok := response.(endpoint.Failure); ok && f.Failed() != nil {
+		ErrorEncoder(ctx, f.Failed(), w)
+		return nil
+	}
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	err = json.NewEncoder(w).Encode(response)
+	return
+}
+/////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////
+func makeUpdateUserHandler(m *mux.Router, endpoints endpoint.Endpoints, options []http.ServerOption) {
+	m.Methods("POST").Path("/update-user").Handler(handlers.CORS(handlers.AllowedMethods([]string{"POST"}), handlers.AllowedOrigins([]string{"*"}))(http.NewServer(endpoints.UpdateUserEndpoint, decodeUpdateUserRequest, encodeUpdateUserResponse, options...)))
+}
+func decodeUpdateUserRequest(_ context.Context, r *http1.Request) (interface{}, error) {
+	req := endpoint.UpdateUserRequest{}
+	err := json.NewDecoder(r.Body).Decode(&req)
+	return req, err
+}
+func encodeUpdateUserResponse(ctx context.Context, w http1.ResponseWriter, response interface{}) (err error) {
+	if f, ok := response.(endpoint.Failure); ok && f.Failed() != nil {
+		ErrorEncoder(ctx, f.Failed(), w)
+		return nil
+	}
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	err = json.NewEncoder(w).Encode(response)
+	return
+}
+/////////////////////////////////////////////////////////////////////////

@@ -12,7 +12,7 @@ type Redis struct {
 
 func (r *Redis) Connect() (*redis.Client, error) {
 	r.Client = redis.NewClient(&redis.Options{
-		Addr:     "redis:" + env.RedisPort,
+		Addr:     "auth-redis:" + env.RedisPort,
 		Password: "",
 		DB:       0,
 	})

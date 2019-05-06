@@ -2,7 +2,6 @@ package helper
 
 import (
 	"strings"
-	"time"
 
 	entities "todo_SELF/auth/pkg/entities"
 	env "todo_SELF/auth/pkg/env"
@@ -13,7 +12,6 @@ import (
 	ewrapper "github.com/pkg/errors"
 )
 
-// return true - exist, false - not
 func IsUserExist(creds entities.Credentials, Mongo *db.Mongo) (user entities.User, exist bool, err error) {
 	users, err := Mongo.Search(bson.M{
 		"email":    creds.Email,
@@ -42,38 +40,13 @@ func IsValidCreds(creds entities.Credentials) error {
 	return nil
 }
 
-func IsValidToken(Redis *db.Redis, Mongo *db.Mongo, key entities.Key) (string, error) {
-	// check length
+func IsValidToken(Redis *db.Redis, key entities.Key) (string, error) {
 	if len(key.Token) < TokenLength {
 		return "", ewrapper.Wrap(env.ErrInvalidToken, env.ErrValidation)
 	}
-
-	// check storage
 	userId, err := Redis.Get(key.Token)
-	if err != nil {
-		if err.Error() == "not found" {
-			users, err := Mongo.Search(bson.M{
-				"IP": key.IP,
-			})
-			if (len(users) == 0) || (err != nil) {
-				return "", err
-			} else {
-				userId = users[0].Id.Hex()
-			}
-		} else {
-			return "", err
-		}
-	}
-
-	// check if expired
-	isNotExpired, err := CompareTimes(key.Expired_at, time.Now().Format(TimeFormat))
 	if err != nil {
 		return "", err
 	}
-
-	if !isNotExpired {
-		return "", ewrapper.Wrap(env.ErrTokenExpired, env.ErrValidation)
-	}
-
 	return userId, nil
 }

@@ -16,7 +16,7 @@ type Mongo struct {
 func (m *Mongo) Connect() (*mgo.Session, error) {
 	if m.mgoSession == nil {
 		var err error
-		m.mgoSession, err = mgo.Dial("mongo:" + env.MongoDBPort)
+		m.mgoSession, err = mgo.Dial("auth-mongo:" + env.MongoDBPort)
 		if err != nil {
 			return nil, err
 		}
@@ -72,4 +72,8 @@ func (m *Mongo) FetchUsers() ([]entities.User, error) {
 
 func (m *Mongo) DropAll() {
 	m.GetCollection(m.mgoSession).RemoveAll(nil)
+}
+
+func (m *Mongo) Drop(rm bson.M) error {
+	return m.GetCollection(m.mgoSession).Remove(rm)
 }

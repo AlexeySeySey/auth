@@ -21,18 +21,21 @@
         <div id="GlobalSuccess" style="display:none" class="alert alert-success"><b></b></div>
         <form class="form-inline">
                 <p>Name:</p>
+                
                 <input type="text" class="mt-2 shadow appearance-none border rounded inline-block align-middle w-full  p-2 text-xs sm:text-base text-grey-darker leading-tight focus:outline-none focus:shadow-outline" id="inlineFormInputName2" placeholder="Jane Doe">
+        
+                <br>
                 <div id="NameError" style="display:none" class="alert alert-danger"><b></b></div>
+                
+    <br><br><br>
 
-                <br>
-                <br>
                 <p>Email Address:</p>  
                 <div class="input-group mb-2 mr-sm-2">
                   <input type="email" class="mt-2 shadow appearance-none border rounded inline-block align-middle w-full  p-2 text-xs sm:text-base text-grey-darker leading-tight focus:outline-none focus:shadow-outline" id="inlineFormInputGroupUsername2" placeholder="example@mail.com">
                 </div>
                 <div id="EmailError" style="display:block;" class="alert alert-danger"><b></b></div>
 
-                <br>
+               <br><br>
 
                 <div class="form-group mb-2 mr-sm-2">
                         <label for="exampleFormControlTextarea1">Message:</label>
@@ -54,7 +57,7 @@
              var errors = false
              
              const errs = {
-                 "name": "Invalid Name Passed",
+                 "name": "Please fill in your name",
                  "email": "Please, check email address format",
                  "message": "Invalid Message Passed",
                  "all": "Error Occured: "
@@ -64,13 +67,14 @@
                 errors = true
                 document.getElementById(id).style.cssText="display:block"
                 document.getElementById(id).firstChild.innerHTML = mess
+            
              }
 
              function sendSuccess(s) {
                     document.getElementById("GlobalSuccess").style.cssText="display:block"
                     document.getElementById("GlobalSuccess").firstChild.innerHTML = s
                 setTimeout(()=>{
-                 window.location.href = "http://127.0.0.1:8000/signin.html"
+                 window.location.href = "https://auth.oms.systems/signin.html"
                 }, 3000)
              }
 
@@ -104,7 +108,7 @@ function validateEmail(email) {
                  }
 
 
-    fetch("http://127.0.0.1:8081/user-registration-attempt", {
+    fetch("http://auth.oms.systems:8081/user-registration-attempt", {
            method: 'POST',
            headers: {
                'Accept': 'application/json'
@@ -130,7 +134,7 @@ function validateEmail(email) {
                 showSome('GlobalSuccess', "OK")
                 document.getElementById('main-test').innerHTML = "<h1 style='text-align:center'>Your request is successfully sent!</h1>"
                 setTimeout(()=>{
-                    window.location.href = "http://localhost:8080/signin.html"
+                    window.location.href = "https://auth.oms.systems/signin.html"
                 }, 1500)
             }
        }).catch((res)=>{

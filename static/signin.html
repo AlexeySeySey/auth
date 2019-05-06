@@ -12,13 +12,14 @@
     <div class="container max-w-lg mx-auto pt-10 pb-4 px-4">
       <div class="inline-block align-middle relative w-full text-left bg-white shadow-md rounded p-5">
         <form class="form-signin">
-                <div id="error_message" style="display: none; color:red" class="h3 mb-3 alert alert-danger"></div>
                 <div id="success_message" style="display: none; color:green" class="h3 mb-3 alert alert-success"></div>
           <h1 class="title text-xl font-bold mb-4">  Sign In</h1>
           <div class="mb-6">
                 <label class="sr-only" for="inlineFormInputGroup">Email</label>
                   <input type="email" class=" mt-2 shadow appearance-none border rounded inline-block align-middle w-full  p-2 text-xs sm:text-base text-grey-darker leading-tight focus:outline-none focus:shadow-outline" id="inlineFormInputGroup" placeholder="Email">
-            </div>
+                  <br><hr>
+                  <div id="error_message" style="display: none; color:red" class="h3 mb-3 alert alert-danger"></div>
+                </div>
         <div class="text-right">
           <button id="submit" class="mb-6 bg-black hover:bg-grey-darkest text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="button" onclick="send()">Save</button>
         </div>
@@ -32,22 +33,26 @@
 window.onload = () => {}
 
 function firstTimeHere(){
-    window.location.href="http://127.0.0.1:8080/registerAttempt.html"
+    window.location.href="https://auth.oms.systems/registerAttempt.html"
 } 
 
 function showSome(id, message) {
-        document.getElementById(id).innerHTML = message
-        document.getElementById(id).style.cssText="display:block"
-        setTimeout(function(){
-            document.getElementById(id).style.cssText="display:none"
-        }, 2000)
+  if (message != "OK"){
+       document.getElementById(id).innerHTML = message
+       document.getElementById(id).style.cssText="display:block"
+  }
+}
+function validateEmail(email) {
+  var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  return re.test(email);
 }
 async function send() {
-    if ((document.getElementById('inlineFormInputGroup').value == '')||(!document.getElementById('inlineFormInputGroup').value.includes('@'))) {
-        showSome('error_message', "Invalid Email Passed")
+    if ((!validateEmail(document.getElementById('inlineFormInputGroup').value)) || (document.getElementById('inlineFormInputGroup').value == '')) {
+        showSome('error_message', "Please fill in your email address correclty")
         console.log("Invalid Email Passed")
+        throw 'err'
     }
-    fetch("http://127.0.0.1:8081/login", {
+    fetch("http://auth.oms.systems:8081/login", {
            method: 'POST',
            headers: {
                'Accept': 'application/json'
@@ -66,17 +71,18 @@ async function send() {
        })
        .then((r)=>{
             if (JSON.parse(r).error) {
-                showSome('error_message', JSON.parse(r).error)
-                setTimeout(()=>{
-                    window.location.href = "http://localhost:8080/registerAttempt.html"
-                }, 1500)
+                var err = JSON.parse(r).error
+                if (err.includes("USER NOT FOUND")){
+                  setTimeout(()=>{
+                      window.location.href = "https://auth.oms.systems/registerAttempt.html"
+                  }, 1500)
+                } else if (!err.includes("USER NOT FOUND")){
+                    err = "Please fill in your email address correclty"
+                    showSome('error_message', err)
+                }
             }else{
-                window.addEventListener("message", function(event) {
-                    let key = event.data + '?key' + JSON.stringify(r)
-                    console.log(key)
-                    window.location.href = key
-                }, false);
                 showSome('success_message', "OK")
+		        parent.postMessage(JSON.parse(r).key, "*")
             }
        }).catch((res)=>{
            console.log('CLIENT FETCH ERROR')

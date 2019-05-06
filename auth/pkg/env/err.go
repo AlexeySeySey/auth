@@ -10,6 +10,7 @@ var (
 	ErrInvalidToken          = errors.New("INVALID TOKEN PASSED")
 	ErrTokenExpired          = errors.New("TOKEN EXPIRED")
 	ErrPermission            = errors.New("PERMISSION DENIED")
+	ErrAccess                = errors.New("ACCESS DENIED")
 )
 
 // wrappers

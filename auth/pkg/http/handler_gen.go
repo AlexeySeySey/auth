@@ -20,8 +20,8 @@ func NewHTTPHandler(endpoints endpoint.Endpoints, options map[string][]http.Serv
 	makeFetchUsersHandler(m, endpoints, options["FetchUsers"])
 	makeBlockUserHandler(m, endpoints, options["BlockUser"])
 	makeUnblockUserHandler(m, endpoints, options["UnblockUser"])
-	makeRegisterNewUserFormHandler(m, endpoints, options["RegisterNewUserForm"])
-	makeUserLoginFormHandler(m, endpoints, options["UserLoginForm"])
-	makeUserRegisterFormHandler(m, endpoints, options["UserRegisterForm"])
+	makeSearchUsersHandler(m, endpoints, options["SearchUsers"])
+	makeDropUserHandler(m, endpoints, options["DropUser"])
+	makeUpdateUserHandler(m, endpoints, options["UpdateUsers"])
 	return m
 }

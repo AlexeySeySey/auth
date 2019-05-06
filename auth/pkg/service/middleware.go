@@ -42,9 +42,9 @@ func (l loggingMiddleware) Access(ctx context.Context, key entities.Key) (e0 ent
 	}()
 	return l.next.Access(ctx, key)
 }
-func (l loggingMiddleware) Logout(ctx context.Context, key entities.Key) (e0 entities.Key, e1 error) {
+func (l loggingMiddleware) Logout(ctx context.Context, key entities.Key) (e1 error) {
 	defer func() {
-		l.logger.Log("method", "Logout", "key", key, "e0", e0, "e1", e1)
+		l.logger.Log("method", "Logout", "key", key, "e1", e1)
 	}()
 	return l.next.Logout(ctx, key)
 }
@@ -55,25 +55,6 @@ func (l loggingMiddleware) UserRegistrationAttempt(ctx context.Context, creds en
 	return l.next.UserRegistrationAttempt(ctx, creds)
 }
 
-func (l loggingMiddleware) RegisterNewUserForm(ctx context.Context) (page string, executer string, e0 error) {
-	defer func() {
-		l.logger.Log("method", "RegisterNewUserForm", "e0", e0, "page", page, "executer", executer)
-	}()
-	return l.next.RegisterNewUserForm(ctx)
-}
-func (l loggingMiddleware) UserLoginForm(ctx context.Context) (page string, executer string, e0 error) {
-	defer func() {
-		l.logger.Log("method", "UserLoginForm", "e0", e0, "page", page, "executer", executer)
-	}()
-	return l.next.UserLoginForm(ctx)
-}
-func (l loggingMiddleware) UserRegisterForm(ctx context.Context) (page string, executer string, e0 error) {
-	defer func() {
-		l.logger.Log("method", "UserRegisterForm", "e0", e0, "page", page, "executer", executer)
-	}()
-	return l.next.UserRegisterForm(ctx)
-}
-
 func (l loggingMiddleware) FetchUsers(ctx context.Context, key entities.Key) (users []entities.User, err error) {
 	defer func() {
 		l.logger.Log("method", "FetchUsers", "key", key, "users", users, "err", err)
@@ -81,15 +62,33 @@ func (l loggingMiddleware) FetchUsers(ctx context.Context, key entities.Key) (us
 	return l.next.FetchUsers(ctx, key)
 }
 
-func (l loggingMiddleware) BlockUser(ctx context.Context, id string) (err error) {
+func (l loggingMiddleware) BlockUser(ctx context.Context, key entities.Key) (err error) {
 	defer func() {
-		l.logger.Log("method", "BlockUser", "id", id, "err", err)
+		l.logger.Log("method", "BlockUser", "key", key, "err", err)
 	}()
-	return l.next.BlockUser(ctx, id)
+	return l.next.BlockUser(ctx, key)
 }
-func (l loggingMiddleware) UnblockUser(ctx context.Context, id string) (err error) {
+func (l loggingMiddleware) UnblockUser(ctx context.Context, key entities.Key) (err error) {
 	defer func() {
-		l.logger.Log("method", "UnblockUser", "id", id, "err", err)
+		l.logger.Log("method", "UnblockUser", "key", key, "err", err)
 	}()
-	return l.next.UnblockUser(ctx, id)
+	return l.next.UnblockUser(ctx, key)
+}
+func (l loggingMiddleware) SearchUsers(ctx context.Context, key entities.Key) (users []entities.User, err error) {
+	defer func() {
+		l.logger.Log("method", "SearchUsers", "key", key, "err", err)
+	}()
+	return l.next.SearchUsers(ctx, key)
+}
+func (l loggingMiddleware) DropUser(ctx context.Context, key entities.Key) (err error) {
+	defer func() {
+		l.logger.Log("method", "DropUser", "key", key, "err", err)
+	}()
+	return l.next.DropUser(ctx, key)
+}
+func (l loggingMiddleware) UpdateUser(ctx context.Context, user entities.User, key entities.Key) (err error) {
+	defer func() {
+		l.logger.Log("method", "UpdateUser", "key", key, "user", user, "err", err)
+	}()
+	return l.next.UpdateUser(ctx, user, key)
 }
